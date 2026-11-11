@@ -73,6 +73,7 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/GammaCorrectionShader.js"></script>
@@ -266,6 +267,16 @@ function buildWorld(root){
   M.compose(V.set(x,6.2*sc,-y),Q,S.set(sc,sc*.9,sc));lm.setMatrixAt(n*2,M);M.compose(V.set(x+(rnd()-.5)*2*sc,8*sc,-y+(rnd()-.5)*2*sc),Q,S.set(sc*.7,sc*.7,sc*.7));lm.setMatrixAt(n*2+1,M);
   walls.push([x-.4,y-.4,x+.4,y+.4,0,5]);n++}
  tm.castShadow=lm.castShadow=true;lm.receiveShadow=true;grp.add(tm,lm);
+ // ===== open-world horizon: forest belt + rolling hills, no distant buildings
+ {const FN=1400,fT=new T.InstancedMesh(new T.CylinderGeometry(.25,.4,5,6),new T.MeshStandardMaterial({color:0x2a1d14,roughness:.9}),FN),fL=new T.InstancedMesh(new T.IcosahedronGeometry(2.9,1),new T.MeshStandardMaterial({color:lc('#2a6a2c'),roughness:.9,emissive:lc('#0a3a12'),emissiveIntensity:.22}),FN*2);
+  const FM=new T.Matrix4(),FQ=new T.Quaternion(),FS=new T.Vector3(),FV=new T.Vector3();let fn=0,fs=11;const fr=()=>{fs=(fs*16807)%2147483647;return fs/2147483647};
+  while(fn<FN){const x=-440+fr()*880,y=-50-fr()*480;const inPlay=Math.abs(x)<178&&y>-152&&y<-46;const nearPath=Math.abs(x)<9&&y>-150;if(inPlay||nearPath)continue;
+   const edge=Math.max(Math.abs(x)-170,(-y-150)*.8,0);if(edge<4&&fr()<.5)continue;
+   const sc=1+fr()*1.3+edge*.004;FM.compose(FV.set(x,2.5*sc,-y),FQ,FS.set(sc,sc,sc));fT.setMatrixAt(fn,FM);
+   FM.compose(FV.set(x,6.4*sc,-y),FQ,FS.set(sc,sc*.95,sc));fL.setMatrixAt(fn*2,FM);FM.compose(FV.set(x+(fr()-.5)*2*sc,8.6*sc,-y+(fr()-.5)*2*sc),FQ,FS.set(sc*.7,sc*.7,sc*.7));fL.setMatrixAt(fn*2+1,FM);fn++}
+  fT.castShadow=false;fL.castShadow=false;grp.add(fT,fL);
+  const hm=new T.MeshStandardMaterial({color:lc('#2f6a2c'),roughness:1,emissive:lc('#0c3a14'),emissiveIntensity:.18});
+  for(let i=0;i<22;i++){const a=i/22*Math.PI*2+fr()*.2,R=300+fr()*60;const h=new T.Mesh(new T.SphereGeometry(1,24,14,0,Math.PI*2,0,Math.PI/2),hm);h.scale.set(70+fr()*60,16+fr()*22,60+fr()*40);h.position.set(Math.cos(a)*R*1.25,0,-(-300+Math.sin(a)*R*.95));grp.add(h)}}
  // NPCs
  const NM=['Aurel','Bryn','Cass','Dov','Esme','Finn','Gala','Hale','Iris','Jax','Kova','Lune'];
  rooms.forEach(r=>addNPC(NM[r.k-1],'Docent · Chapter '+r.k+' · '+r.name,r.k,r.cx,r.cy,6.5,.16*(r.k%2?1:-1)));
@@ -273,6 +284,7 @@ function buildWorld(root){
  addNPC('Rook','Park duelist',2,pc[0],pc[1],16.5,.07);addNPC('Tamsin','Park duelist',4,pc[0],pc[1],16.5,.07,3.1);
  addNPC('Old Bram','Collector',6,40,-76,14,-.08);addNPC('Nyx','Park duelist',5,-20,-124,10,.1);addNPC('Pell','Park duelist',9,25,-124,10,-.1);addNPC('Sable','Wanderer',10,90,-100,3.5,.25);
  ['Lady Hex','Sir Glyph','The Warden','Queen Sigil','Archmage Zero'].forEach((nm,i)=>{const a=-1.2+i*.6;addNPC(nm,'Castle champion · Chapter '+(8+i),8+i,-98+Math.cos(a+3.14)*-9,-100+Math.sin(a)*11,0,0)});
+ loadChars();
  // dialog UI
  const d=document.createElement('div');d.id='dlg';d.style.cssText='position:fixed;left:50%;bottom:calc(70px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(520px,calc(100% - 24px));background:rgba(6,12,9,.92);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:16px 18px;z-index:8;display:none;color:#eef5ef;font:500 14px/1.5 system-ui,sans-serif;backdrop-filter:blur(10px)';
  document.body.appendChild(d);
@@ -280,6 +292,16 @@ function buildWorld(root){
  document.body.appendChild(tb);const tf=e=>{e.preventDefault();e.stopPropagation();if(nearNpc)openDlg(nearNpc)};tb.addEventListener('mousedown',tf);tb.addEventListener('touchstart',tf,{passive:false});
  addEventListener('message',e=>{const m=e.data;if(m&&m.mmg==='pause'){window.__paused=!!m.on;return}if(m&&m.mmg==='result'&&pendingBattle){const b=pendingBattle;pendingBattle=null;if(m.won){const id=pick(cardsOf(b.k));earnAdd(id);banner('Card earned',DATA.cards[id][0])}else hintShow('Defeated by '+b.name+' — challenge again any time',2600)}});
 }
+function loadChars(){
+ const urls=['char1.wasm','char2.wasm','char3.wasm'],tpl=[];
+ Promise.all(urls.map(u=>fetch(u).then(r=>new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()).then(b=>new Promise((res,rej)=>new T.GLTFLoader().parse(b,'',res,rej))))).then(gs=>{
+  gs.forEach(g=>{const b=new T.Box3().setFromObject(g.scene),h=b.max.y-b.min.y;tpl.push({g,k:1.95/h,y:-b.min.y*(1.95/h)})});
+  NPCS.forEach((n,i)=>{const t=tpl[(n.k+i)%3],m=T.SkeletonUtils.clone(t.g.scene);m.scale.setScalar(t.k);m.position.y=t.y;
+   m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.frustumCulled=false}});
+   const old=n.g;while(old.children.length)old.remove(old.children[0]);old.add(m);old.userData={aL:new T.Object3D(),aR:new T.Object3D()};
+   const mx=new T.AnimationMixer(m),walk=T.AnimationClip.findByName(t.g.animations,'walk'),idle=T.AnimationClip.findByName(t.g.animations,'idle');
+   n.mx=mx;n.aW=mx.clipAction(walk);n.aI=mx.clipAction(idle);n.aI.play();n.aW.play();n.aW.setEffectiveWeight(0);n.wt=0;n.mx.update(Math.random()*2);n.rig=true})
+ }).catch(e=>console.warn('chars',e))}
 function npcLine(n){const id=pick(cardsOf(n.k)),r=DATA.cards[id];const o=['Have you seen <b>'+r[0]+'</b>? '+(r[5]||'A favourite of mine')+'.','<b>'+r[0]+'</b> carries '+(r[4]!=null?r[4]+' power':'no power at all')+' — do not let the frame fool you.','They say <b>'+r[0]+'</b> watches the room when the lights go out. Press G and see.','Chapter '+n.k+', '+DATA.series[n.k-1].th+'. <b>'+r[0]+'</b> is the one collectors ask about.'];return pick(o)}
 function openDlg(n){dlgOpen=n;if(document.pointerLockElement)document.exitPointerLock();const d=$('#dlg');const B='cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:9px 14px;font:700 11px system-ui;letter-spacing:.1em;margin:10px 8px 0 0';
  const show=(body,btns)=>{d.innerHTML='<div style="font:700 17px Georgia,serif">'+n.name+'</div><div style="font:600 10px system-ui;letter-spacing:.14em;color:#8fb09a;text-transform:uppercase;margin-bottom:8px">'+n.role+' · you hold '+earned().length+' earned cards</div><div>'+body+'</div>'+btns.map((b,i)=>'<button data-i="'+i+'" style="'+B+(b[2]?';border-color:#3dff4a;color:#3dff4a':'')+'">'+b[0]+'</button>').join('');d.style.display='block';d.querySelectorAll('button').forEach(e=>e.onclick=ev=>{ev.stopPropagation();btns[+e.dataset.i][1]()})};
@@ -288,13 +310,14 @@ function openDlg(n){dlgOpen=n;if(document.pointerLockElement)document.exitPointe
  talk()}
 function closeDlg(){dlgOpen=null;$('#dlg').style.display='none'}
 function worldTick(dt,t){
- const ext=curReg==='EXT';if(worldGrp)worldGrp.visible=ext||curReg==='LOBBY';
+ const ext=curReg==='EXT';if(worldGrp)worldGrp.visible=ext||curReg==='LOBBY';if(sky.userData.skyline)sky.userData.skyline.visible=!ext;
  if(ext){const kx=Math.round(P.x/30)*30,ky=Math.round(P.y/30)*30;if(kx!==worldTick.kx||ky!==worldTick.ky){worldTick.kx=kx;worldTick.ky=ky;if(ky<-45){key.position.copy(B2(kx+28,ky-24,52));key.target.position.copy(B2(kx,ky,0));key.target.updateMatrixWorld();key.angle=.95;key.shadow.camera.far=150;shadowDirty=3}else placeKey('EXT')}}
  let best=null,bd=4.2;
  for(const n of NPCS){const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy);n.g.visible=d<110&&(n.reg===curReg||(n.reg==='EXT'&&curReg==='LOBBY')||(n.reg!=='EXT'&&curReg!=='EXT'&&d<75));if(!n.g.visible)continue;
   const close=d<4.2;let hx,hy;
   if(n.r&&!close&&dlgOpen!==n){n.a+=n.sp*dt;n.x=n.cx+Math.cos(n.a)*n.r;n.y=n.cy+Math.sin(n.a)*n.r;const s=Math.sign(n.sp);hx=-Math.sin(n.a)*s;hy=Math.cos(n.a)*s;const sw=Math.sin(t*5+n.cx)*.5;n.g.userData.aL.rotation.x=sw;n.g.userData.aR.rotation.x=-sw;n.g.position.y=Math.abs(Math.sin(t*5+n.cx))*.04}
   else{hx=d<12?dx/d:0;hy=d<12?dy/d:1;n.g.userData.aL.rotation.x*=.9;n.g.userData.aR.rotation.x=close?-.9+Math.sin(t*3)*.2:n.g.userData.aR.rotation.x*.9}
+  if(n.rig){const mv=n.r&&!close&&dlgOpen!==n?1:0;n.wt+=(mv-n.wt)*Math.min(1,dt*6);n.aW.setEffectiveWeight(n.wt);n.aI.setEffectiveWeight(1-n.wt);n.aW.timeScale=Math.max(.4,Math.abs(n.sp)*5.5+.4);n.mx.update(dt);n.g.position.y=0}
   n.g.position.x=n.x;n.g.position.z=-n.y;const ty=Math.atan2(hx,-hy);let da=ty-n.g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));n.g.rotation.y+=da*Math.min(1,dt*6);
   if(close&&d<bd){bd=d;best=n}}
  nearNpc=best;const tb=$('#bTalk');if(tb){const on=best&&!dlgOpen&&!insp;tb.style.display=on?'block':'none';if(on)tb.textContent='E · TALK TO '+best.name.toUpperCase()}
