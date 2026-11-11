@@ -380,6 +380,7 @@ function buildNav(){
   const h=(t)=>{const e=document.createElement('h6'); e.textContent=t; return e;};
   if(window.MMX&&MMX.page('dash')) nav.append(navBtn('X:dash','Dashboard','Every page in one place','','#3dff4a'));
   if(window.MMX&&MMX.page('tokens')) nav.append(navBtn('X:tokens','Tokens','BONSAI trade, swap and more','','#3dff4a'));
+  if(window.MMX&&MMX.page('gallery')) nav.append(navBtn('X:gallery','MagicMint Gallery','Walk the 3D gallery, park and castle','','#3dff4a'));
   nav.append(h('Browse'));
   nav.append(navBtn('ALL','All cards','Master list of every slot',ROWS.length,'#3dff4a'));
   nav.append(navBtn('COLL','All collections','Grid or list of every collection',SERIES.length,'#3dff4a'));
@@ -2491,6 +2492,26 @@ P.tokens=o=>{
  setTimeout(()=>root.querySelectorAll('.rv').forEach(e=>{const r=e.getBoundingClientRect();if(r.top<innerHeight)e.classList.add('in')}),50)};
 }
 
+{
+FLAT.push(['gallery','MagicMint Gallery','Walk the 3D gallery, park and castle','#3dff4a']);
+const GURL=location.hostname.endsWith('github.io')?'gallery/':'https://thecreator715.github.io/MAGICMINT2026V1/gallery/';
+let gh=null,gf=null,bar=null;
+const BS='cursor:pointer;border:1px solid #3dff4a;background:rgba(5,10,7,.9);color:#fff;border-radius:99px;padding:9px 16px;font:700 11px sans-serif;letter-spacing:.12em';
+function galShow(){if(!gh){gh=document.createElement('div');gh.style.cssText='position:fixed;inset:0;z-index:9998;background:#020604;display:none';
+ gf=document.createElement('iframe');gf.src=GURL;gf.title='MagicMint Gallery';gf.setAttribute('allow','fullscreen; autoplay; gamepad');gf.style.cssText='width:100%;height:100%;border:0;display:block';
+ const b=document.createElement('button');b.textContent='← BACK TO SITE';b.style.cssText=BS+';position:absolute;left:12px;top:12px;z-index:2';b.onclick=()=>{st.coll='X:dash';render()};
+ const a=document.createElement('a');a.textContent='OPEN IN NEW TAB';a.href=GURL;a.target='_blank';a.rel='noopener';a.style.cssText=BS+';position:absolute;left:170px;top:12px;z-index:2;text-decoration:none';
+ gh.append(gf,b,a);document.body.appendChild(gh);
+ setInterval(()=>{gh.style.display=st.coll==='X:gallery'?'block':'none'},250)}
+ gh.style.display='block'}
+P.gallery=o=>{o.innerHTML='<div class="note">The gallery opens full screen. Use Back to site to return.<\/div>';galShow()};
+addEventListener('message',e=>{const m=e.data;if(!m||m.mmg!=='battle')return;st.coll='LAB:cardgame';render();if(bar)bar.remove();
+ bar=document.createElement('div');bar.style.cssText='position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:9999;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(5,10,7,.92);border:1px solid #ffffff2a;border-radius:16px;padding:10px 14px;color:#fff;font:600 12px sans-serif;max-width:calc(100% - 20px)';
+ bar.innerHTML='<span>Gallery battle vs <b>'+E(m.npc)+'<\/b> · Chapter '+E(m.k)+' deck<\/span>';
+ [['I WON',true],['I LOST',false]].forEach(([t,w])=>{const b=document.createElement('button');b.textContent=t;b.style.cssText=BS;b.onclick=()=>{bar.remove();bar=null;st.coll='X:gallery';render();if(gf)gf.contentWindow.postMessage({mmg:'result',won:w},'*')};bar.append(b)});
+ document.body.appendChild(bar)});
+if(/gallery-battle/.test(location.hash))setTimeout(()=>{st.coll='LAB:cardgame';render()},600);
+}
 {
 FLAT.push(['dash','Dashboard','Every page in one place','#3dff4a']);
 const css=document.createElement('style');css.textContent=`
