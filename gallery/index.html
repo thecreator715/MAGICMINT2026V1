@@ -278,7 +278,7 @@ function buildWorld(root){
  document.body.appendChild(d);
  const tb=document.createElement('div');tb.id='bTalk';tb.style.cssText='position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:7;display:none;cursor:pointer;border:1px solid #3dff4a;background:rgba(6,12,9,.85);color:#fff;border-radius:99px;padding:10px 18px;font:700 12px system-ui;letter-spacing:.12em';
  document.body.appendChild(tb);const tf=e=>{e.preventDefault();e.stopPropagation();if(nearNpc)openDlg(nearNpc)};tb.addEventListener('mousedown',tf);tb.addEventListener('touchstart',tf,{passive:false});
- addEventListener('message',e=>{const m=e.data;if(m&&m.mmg==='result'&&pendingBattle){const b=pendingBattle;pendingBattle=null;if(m.won){const id=pick(cardsOf(b.k));earnAdd(id);banner('Card earned',DATA.cards[id][0])}else hintShow('Defeated by '+b.name+' — challenge again any time',2600)}});
+ addEventListener('message',e=>{const m=e.data;if(m&&m.mmg==='pause'){window.__paused=!!m.on;return}if(m&&m.mmg==='result'&&pendingBattle){const b=pendingBattle;pendingBattle=null;if(m.won){const id=pick(cardsOf(b.k));earnAdd(id);banner('Card earned',DATA.cards[id][0])}else hintShow('Defeated by '+b.name+' — challenge again any time',2600)}});
 }
 function npcLine(n){const id=pick(cardsOf(n.k)),r=DATA.cards[id];const o=['Have you seen <b>'+r[0]+'</b>? '+(r[5]||'A favourite of mine')+'.','<b>'+r[0]+'</b> carries '+(r[4]!=null?r[4]+' power':'no power at all')+' — do not let the frame fool you.','They say <b>'+r[0]+'</b> watches the room when the lights go out. Press G and see.','Chapter '+n.k+', '+DATA.series[n.k-1].th+'. <b>'+r[0]+'</b> is the one collectors ask about.'];return pick(o)}
 function openDlg(n){dlgOpen=n;if(document.pointerLockElement)document.exitPointerLock();const d=$('#dlg');const B='cursor:pointer;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:9px 14px;font:700 11px system-ui;letter-spacing:.1em;margin:10px 8px 0 0';
@@ -714,6 +714,7 @@ function updateVisibility(reg){
 }
 function frame(now){
   requestAnimationFrame(frame);
+  if(window.__paused){last=now;return}
   const dt=Math.min(.05,(now-last)/1000);last=now;tAcc+=dt;
   if(!started||!NAV){renderer.render(scene,camera);return}
   // movement
