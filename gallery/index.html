@@ -520,24 +520,29 @@ function gz(u){return fetch(u).then(r=>new Response(r.body.pipeThrough(new Decom
 function getModel(i){return _mp[i]||(_mp[i]=gz(MODELS[i][1]+'.wasm').then(b=>new Promise((res,rej)=>new T.GLTFLoader().parse(b,'',g=>{const bb=new T.Box3().setFromObject(g.scene),h=bb.max.y-bb.min.y;g.k=1.95/h;g.y=-bb.min.y*g.k;res(g)},rej))))}
 let _clips=null;function getClips(){return _clips||(_clips=getModel(0).then(g=>({walk:T.AnimationClip.findByName(g.animations,'walk'),idle:T.AnimationClip.findByName(g.animations,'idle')})))}
 function ensureBS(){if(BSM)return;const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d'),g=x.createRadialGradient(64,64,4,64,64,62);g.addColorStop(0,'rgba(0,0,0,.75)');g.addColorStop(.55,'rgba(0,0,0,.38)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,128,128);const tx=new T.CanvasTexture(c);BSM=new T.MeshBasicMaterial({map:tx,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2});BSG=new T.PlaneGeometry(1.5,1.5)}
-function mkRL(m){const Z=new T.Vector3(0,0,1),Y=new T.Vector3(0,1,0);
- function wq(o){const r=new T.Quaternion(),ch=[];while(o&&o!==m){ch.push(o);o=o.parent}for(let i=ch.length-1;i>=0;i--)r.multiply(ch[i].quaternion);return r}
- function mk(b){const qp=wq(b.parent).invert();return{b,qr:b.quaternion.clone(),az:Z.clone().applyQuaternion(qp),ay:Y.clone().applyQuaternion(qp)}}
- const B={};['L','R'].forEach(s=>['Thigh','Calf','Foot','Upperarm','Forearm','Hand','Clavicle'].forEach(n=>{const b=m.getObjectByName(s+'_'+n);if(b)B[s+n]=mk(b)}));
- ['Pelvis','Waist','Spine01','Spine02','Head'].forEach(n=>{const b=m.getObjectByName(n);if(b)B[n]=mk(b)});return B}
-const _rqa=new T.Quaternion(),_rqb=new T.Quaternion();
-function applyRun(B,r,ph,lean){if(!B||r<.01)return;
- const S=(k,y,a)=>{const e=B[k];if(!e)return;_rqa.setFromAxisAngle(y?e.ay:e.az,a);_rqb.copy(_rqa).multiply(e.qr);e.b.quaternion.slerp(_rqb,r)};
- const q=ph,sn=Math.sin(q),sL=Math.sin(q+Math.PI),kn=(p)=>.3+1.3*Math.max(0,Math.cos(p-.15)),cs=Math.cos(q),cL=-cs;
- S('LThigh',0,.2+.68*sn);S('RThigh',0,.2+.68*sL);
- S('LCalf',0,-kn(q));S('RCalf',0,-kn(q+Math.PI));
- S('LFoot',0,.18*cs+.1);S('RFoot',0,.18*cL+.1);
- S('LUpperarm',0,-.2-.8*sn);S('RUpperarm',0,-.2-.8*sL);
- S('LForearm',0,1.5+.2*sn);S('RForearm',0,1.5+.2*sL);
- S('LHand',0,.08);S('RHand',0,.08);
- S('Waist',0,-.05-.03*lean);S('Spine01',0,-.05-.03*lean);S('Spine02',0,-.05-.03*lean);
- S('Waist',1,.05*sn);S('Spine02',1,.07*sn);S('Pelvis',1,-.08*sn);S('Head',0,.14+.04*lean);S('Head',1,-.05*sn);
- S('LClavicle',0,.03*sn);S('RClavicle',0,.03*sL)}
+function wqB(o,m){const r=new T.Quaternion(),ch=[];while(o&&o!==m){ch.push(o);o=o.parent}for(let i=ch.length-1;i>=0;i--)r.multiply(ch[i].quaternion);return r}
+function mkRL(m){const Z=new T.Vector3(0,0,1);
+ const posOf=o=>{const ch=[];while(o&&o!==m){ch.push(o);o=o.parent}const M=new T.Matrix4();for(let i=ch.length-1;i>=0;i--){ch[i].updateMatrix();M.multiply(ch[i].matrix)}return new T.Vector3().setFromMatrixPosition(M)};
+ const B={m};
+ const mk=(k,n,cn,side,off)=>{const b=m.getObjectByName(n);if(!b)return;const e={b,qr:wqB(b,m)};if(cn){const c=m.getObjectByName(cn);if(c){const d=posOf(c).sub(posOf(b)).normalize();const tg=new T.Vector3(0,-1,side*off).normalize();e.rd=new T.Quaternion().setFromUnitVectors(d,tg)}}B[k]=e};
+ for(const [S,sd] of [['L',-1],['R',1]]){mk(S+'Thigh',S+'_Thigh');mk(S+'Calf',S+'_Calf');mk(S+'Foot',S+'_Foot');
+  mk(S+'Upperarm',S+'_Upperarm',S+'_Forearm',sd,.16);mk(S+'Forearm',S+'_Forearm',S+'_Hand',sd,.10);mk(S+'Hand',S+'_Hand')}
+ ['Pelvis','Waist','Spine01','Spine02','Head'].forEach(n=>mk(n,n));return B}
+const _Zx=new T.Vector3(0,0,1),_Yx=new T.Vector3(0,1,0);
+const Rz=a=>new T.Quaternion().setFromAxisAngle(_Zx,a),Ry=a=>new T.Quaternion().setFromAxisAngle(_Yx,a);
+function applyRun(B,r,ph,lean){if(!B||r<.01)return;const m=B.m;
+ const put=(k,Rw)=>{const e=B[k];if(!e)return;const Pw=wqB(e.b.parent,m).invert();const q=Pw.multiply(Rw).multiply(e.qr);e.b.quaternion.slerp(q,r)};
+ const sn=Math.sin(ph),cs=Math.cos(ph),kn=p=>.3+1.3*Math.max(0,Math.cos(p-.15));
+ const ls=-.04-.03*lean;
+ put('Pelvis',Ry(-.07*sn).multiply(Rz(ls)));
+ put('Waist',Ry(.04*sn).multiply(Rz(ls*1.5)));put('Spine01',Ry(.05*sn).multiply(Rz(ls*2.2)));put('Spine02',Ry(.07*sn).multiply(Rz(ls*3)));
+ put('Head',Ry(-.03*sn).multiply(Rz(-.02)));
+ for(const [S,p] of [['L',ph],['R',ph+Math.PI]]){const s=Math.sin(p),c=Math.cos(p),th=.2+.68*s;
+  put(S+'Thigh',Rz(th));put(S+'Calf',Rz(th-kn(p)));put(S+'Foot',Rz(.12*c+.06));
+  const q=ph+(S==='L'?0:Math.PI),as=Math.sin(q),b1=-.15-.8*as,b2=b1+1.5+.2*as;
+  const ua=B[S+'Upperarm'],fa=B[S+'Forearm'];
+  if(ua&&ua.rd)put(S+'Upperarm',Rz(b1).multiply(ua.rd));
+  if(fa&&fa.rd){const Rf=Rz(b2).multiply(fa.rd);put(S+'Forearm',Rf);put(S+'Hand',Rf)}}}
 function rigOf(t,cl){const m=T.SkeletonUtils.clone(t.scene);m.scale.setScalar(t.k);m.position.y=t.y;m.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});
  if(t.fy===undefined){t.scene.updateMatrixWorld(true);const hl=t.scene.getObjectByName('L_Hand'),hr=t.scene.getObjectByName('R_Hand');t.fy=0;if(hl&&hr){const a=new T.Vector3(),b=new T.Vector3();hl.getWorldPosition(a);hr.getWorldPosition(b);const lx=a.x-b.x,lz=a.z-b.z;if(Math.hypot(lx,lz)>1e-4)t.fy=Math.atan2(-lz,lx)}}
  m.rotation.y=-t.fy;
@@ -561,7 +566,7 @@ function tpCam(dt){
  {const tg=run?Math.max(0,Math.min(1,(sp-6)/4.5)):0;AV.rw+=(tg-AV.rw)*Math.min(1,dt*(tg>AV.rw?5:7));
   const cad=sp/8.2;AV.ph+=dt*6.2832*cad*(AV.rw>.05?1:0);if(AV.rw<.05)AV.ph=0;
   const ac=(sp-AV.pv)/Math.max(dt,.001);AV.pv=sp;AV.lean=(AV.lean||0)+(Math.max(-1,Math.min(1,ac/30))-(AV.lean||0))*Math.min(1,dt*5);
-  applyRun(AV.B,AV.rw,AV.ph,AV.lean||0);
+  if(window.__runDbg!==undefined){AV.rw=1;AV.ph=window.__runDbg}applyRun(AV.B,AV.rw,AV.ph,AV.lean||0);
   if(AV.m){AV.m.position.y=AV.my+AV.rw*.07*Math.cos(2*AV.ph+.6)}}
  const cy=Math.cos(P.yaw),sy=Math.sin(P.yaw),pp=P.pitch,D=4.3+Math.min(1.6,sp*.1);
  const px=P.x+cy*.5,py=P.y+sy*.5,pz=P.z+1.55;
