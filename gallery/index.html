@@ -114,10 +114,14 @@ const EYE=1.65;
 // lights
 const hemi=new T.HemisphereLight(0xaab6d0,0x2a2320,0.3);scene.add(hemi);
 const key=new T.SpotLight(0xfff0d8,0,150,1.15,.75,1);key.castShadow=true;key.shadow.mapSize.set(TOUCH?1024:3072,TOUCH?1024:3072);key.shadow.camera.near=1;key.shadow.camera.far=150;key.shadow.bias=-.0008;key.shadow.normalBias=.04;key.shadow.radius=3;scene.add(key);scene.add(key.target);let shadowDirty=4;
+const moon=new T.DirectionalLight(0x9fb6ff,0);moon.castShadow=true;{const m=TOUCH?1024:2048;moon.shadow.mapSize.set(m,m);const c=moon.shadow.camera;c.left=c.bottom=-34;c.right=c.top=34;c.near=1;c.far=140;moon.shadow.bias=-.0004;moon.shadow.normalBias=.05}scene.add(moon,moon.target);
+const rimL=new T.DirectionalLight(0xffb27a,0);rimL.position.set(30,18,-40);scene.add(rimL);
+function moonTick(){const ext=typeof curReg!=='undefined'&&curReg==='EXT';moon.intensity+=((ext?1.5:0)-moon.intensity)*.1;rimL.intensity+=((ext?.55:0)-rimL.intensity)*.1;if(!ext)return;
+ const px=Math.round(P.x/2)*2,pz=Math.round(-P.y/2)*2;moon.target.position.set(px,0,pz);moon.position.set(px-38,64,pz+30);moon.target.updateMatrixWorld();if((frames&1)===0)shadowDirty=Math.max(shadowDirty,1)}
 const POOL=TOUCH?6:8, lights=[];
 for(let i=0;i<POOL;i++){const l=new T.PointLight(0xffe2b8,0,26,1.6);scene.add(l);lights.push(l)}
 // composer: MSAA + bloom + grade
-let composer,bloom,finalP;
+let composer,bloom,finalP,aoP,depthRT,depthMat,_dskip=[],_dfr=0;
 function buildComposer(){
   const w=innerWidth,h=innerHeight,gl2=renderer.capabilities.isWebGL2;
   const hf=gl2&&renderer.extensions.get('EXT_color_buffer_float');
@@ -126,6 +130,21 @@ function buildComposer(){
   if(gl2)rt.samples=4;
   composer=new T.EffectComposer(renderer,rt);composer.setPixelRatio(PR);composer.setSize(w,h);
   composer.addPass(new T.RenderPass(scene,camera));
+  if(!TOUCH){depthRT=new T.WebGLRenderTarget(Math.max(2,w*PR>>1),Math.max(2,h*PR>>1),{minFilter:T.NearestFilter,magFilter:T.NearestFilter,format:T.RGBAFormat});depthMat=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking});
+  aoP=new T.ShaderPass({uniforms:{tDiffuse:{value:null},tDepth:{value:depthRT.texture},tanH:{value:.65},asp:{value:1.78},near:{value:.06},far:{value:1600},str:{value:1},ink:{value:.22}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  fragmentShader:`uniform sampler2D tDiffuse,tDepth;uniform float tanH,asp,near,far,str,ink;varying vec2 vUv;
+  float lin(vec2 u){vec4 t=texture2D(tDepth,u);float d=dot(t,(255./256.)/vec4(256.*256.*256.,256.*256.,256.,1.));return (near*far)/(far-(far-near)*d);}
+  void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;float zc=lin(vUv);
+   if(zc<far*.5){
+   float rUV=1.0/(zc*2.*tanH);float rot=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)*6.2832;float occ=0.;
+   for(int i=0;i<12;i++){float fi=float(i);float a=fi*2.39996+rot;float rr=rUV*sqrt((fi+.5)/12.);
+    float zs=lin(vUv+vec2(cos(a)/asp,sin(a))*rr);float df=(zc-zs)/max(zc*.04,.12);
+    occ+=smoothstep(.15,1.,df)*(1.-smoothstep(3.,8.,df));}
+   float ao=clamp(1.-occ/12.*1.9*str,.3,1.);ao=mix(1.,ao,1.-smoothstep(25.,110.,zc));
+   vec2 px=vec2(1./1280.,1./720.)*1.5;float e=max(max(abs(lin(vUv+vec2(px.x,0.))-zc),abs(lin(vUv+vec2(0.,px.y))-zc)),max(abs(lin(vUv-vec2(px.x,0.))-zc),abs(lin(vUv-vec2(0.,px.y))-zc)))/zc;
+   float edge=smoothstep(.03,.14,e)*(1.-smoothstep(40.,120.,zc));
+   c*=ao;c*=1.-ink*edge;}
+   gl_FragColor=vec4(c,1.);}`});composer.addPass(aoP)}
   bloom=new T.UnrealBloomPass(new T.Vector2(w,h),0.82,0.7,0.58);composer.addPass(bloom);
   finalP=new T.ShaderPass({uniforms:{tDiffuse:{value:null},time:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:`uniform sampler2D tDiffuse;uniform float time;varying vec2 vUv;
@@ -143,10 +162,17 @@ function buildComposer(){
   c=clamp(c,0.,1.);c=mix(c,c*c*(3.-2.*c),.22);c=pow(max(c,0.),vec3(1./2.2));c+=(h(vUv*900.)-.5)*.010;gl_FragColor=vec4(c,1.);}`});
   composer.addPass(finalP);
 }
+function depthPass(){if(!aoP)return;
+ if(!(_dfr++%30)){_dskip=[];scene.traverse(o=>{if(o.isPoints||o.isLine||o.isSprite||(o.isMesh&&(o===sky||(o.material&&(o.material.transparent||o.material.blending===T.AdditiveBlending)))))_dskip.push(o)})}
+ const vs=_dskip.map(o=>o.visible);_dskip.forEach(o=>o.visible=false);
+ const bg=scene.background,fg=scene.fog,rt=renderer.getRenderTarget(),cc=renderer.getClearColor(new T.Color()),ca=renderer.getClearAlpha(),sm=renderer.shadowMap.autoUpdate,se=renderer.shadowMap.enabled;
+ scene.background=null;scene.fog=null;scene.overrideMaterial=depthMat;renderer.shadowMap.enabled=false;renderer.setClearColor(0xffffff,1);renderer.setRenderTarget(depthRT);renderer.clear();renderer.render(scene,camera);
+ renderer.setRenderTarget(rt);renderer.setClearColor(cc,ca);renderer.shadowMap.enabled=se;scene.overrideMaterial=null;scene.background=bg;scene.fog=fg;_dskip.forEach((o,i)=>o.visible=vs[i]);
+ const u=aoP.uniforms;u.tanH.value=Math.tan(camera.fov*Math.PI/360);u.asp.value=camera.aspect;u.near.value=camera.near;u.far.value=camera.far}
 function resize(){
   const w=innerWidth,h=innerHeight;renderer.setPixelRatio(PR);renderer.setSize(w,h,false);
   camera.aspect=w/h;camera.fov=w/h<0.8?78:66;camera.updateProjectionMatrix();
-  if(composer){composer.setPixelRatio(PR);composer.setSize(w,h)}
+  if(composer){composer.setPixelRatio(PR);composer.setSize(w,h);if(depthRT)depthRT.setSize(Math.max(2,w*PR>>1),Math.max(2,h*PR>>1))}
 }
 addEventListener('resize',resize);resize();buildComposer();
 // ------------------------------------------------------------ sky
@@ -1380,7 +1406,7 @@ function frame(now){
   }
   if(burst){burst.t+=dt;const a=burst.pts.geometry.attributes.position;for(let i=0;i<burst.vel.length;i++){const v=burst.vel[i];a.array[i*3]+=v[0]*dt*.9;a.array[i*3+1]+=(v[1]-burst.t*.4)*dt*.9;a.array[i*3+2]+=v[2]*dt*.9}a.needsUpdate=true;burst.pts.material.opacity=Math.max(0,1-burst.t/1.4);if(burst.t>1.4){camera.remove(burst.pts);burst.pts.geometry.dispose();burst=null}}
   // render
-  bloom.strength=.28+glow*.4;bloom.threshold=.78-glow*.14;bloom.radius=.45;worldTick(dt,tAcc);battleTick(dt,tAcc);finalP.uniforms.time.value=tAcc%10;composer.render();
+  bloom.strength=.28+glow*.4;bloom.threshold=.78-glow*.14;bloom.radius=.45;worldTick(dt,tAcc);battleTick(dt,tAcc);finalP.uniforms.time.value=tAcc%10;moonTick();depthPass();composer.render();
   // perf governor
   frames++;fpsT+=Math.min(1,(now-(frame._r||now))/1000);frame._r=now;
   if(fpsT>1){const f=frames/fpsT;if(DBG)$('#fps').textContent=f.toFixed(0)+' fps · '+curReg;
