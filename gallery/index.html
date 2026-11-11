@@ -130,8 +130,17 @@ function buildComposer(){
   finalP=new T.ShaderPass({uniforms:{tDiffuse:{value:null},time:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:`uniform sampler2D tDiffuse;uniform float time;varying vec2 vUv;
   float h(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233))+time)*43758.5453);}
-  void main(){vec3 c=texture2D(tDiffuse,vUv).rgb;vec2 q=vUv-.5;c*=1.-dot(q,q)*.75;
-  c=mix(c,c*c*(3.-2.*c),.18);c=pow(max(c,0.),vec3(1./2.2));c+=(h(vUv*900.)-.5)*.012;gl_FragColor=vec4(c,1.);}`});
+  void main(){vec2 q=vUv-.5;float r2=dot(q,q);vec2 px=vec2(1./1280.,1./720.);
+  vec2 ca=q*r2*.012;
+  vec3 c=vec3(texture2D(tDiffuse,vUv-ca).r,texture2D(tDiffuse,vUv).g,texture2D(tDiffuse,vUv+ca).b);
+  vec3 bl=(texture2D(tDiffuse,vUv+vec2(px.x,0.)).rgb+texture2D(tDiffuse,vUv-vec2(px.x,0.)).rgb+texture2D(tDiffuse,vUv+vec2(0.,px.y)).rgb+texture2D(tDiffuse,vUv-vec2(0.,px.y)).rgb)*.25;
+  c+=(c-bl)*.35;c=c/(1.+max(c.r,max(c.g,c.b))*.18);
+  c*=1.-r2*.8;
+  float l=dot(c,vec3(.299,.587,.114));
+  c=mix(c,c*vec3(.93,1.0,1.1),smoothstep(.5,0.,l));
+  c=mix(c,c*vec3(1.08,1.02,.92),smoothstep(.45,1.,l));
+  c=mix(vec3(l),c,1.12);
+  c=clamp(c,0.,1.);c=mix(c,c*c*(3.-2.*c),.22);c=pow(max(c,0.),vec3(1./2.2));c+=(h(vUv*900.)-.5)*.010;gl_FragColor=vec4(c,1.);}`});
   composer.addPass(finalP);
 }
 function resize(){
@@ -427,6 +436,7 @@ function buildWorld(root){
     CH.forEach(c=>{while(c.inner.children.length)c.inner.remove(c.inner.children[0]);const m=gl.scene.clone(true);m.scale.setScalar(k);m.position.y=-bb.min.y*k;m.traverse(o=>{if(o.isMesh){o.castShadow=o.receiveShadow=true}});c.inner.add(m)});res()},rej))}catch(e){console.warn('chest',e)}})()}
  // ===== five more 1/1 wandering characters
  addNPC('Ember Hex','Blood witch · duelist',11,-70,-60,12,.09,.3);addNPC('Rime Warden','Frost necromancer · duelist',3,60,-60,12,-.09,1.5);addNPC('Khepri','Relic mage · duelist',12,0,-125,10,.1,2.8);addNPC('Moss Sage','Mushroom druid · duelist',9,-130,-60,12,-.08,4);addNPC('Cogsworth','Clockwork alchemist · trader',7,125,-60,12,.09,5.2);
+ addNPC('Ronin Kage','Neon samurai · duelist',4,-100,-95,12,.09,.8);addNPC('Captain Brassbeard','Sky pirate · trader',6,100,-95,12,-.09,2.1);addNPC('Stella Veil','Star priestess · duelist',8,-65,-105,12,.08,3.3);addNPC('Obsidian Gorrim','Lava golem · duelist',5,65,-105,12,-.08,4.5);addNPC('Kitsune Volt','Cyber fox rogue · duelist',2,0,-90,12,.1,5.7);
  // hall-of-fame curator + stadium + trader stations + critters
  {const h=BL.find(b=>b.hof);addNPC('Curator Aurelia','Hall of Fame curator',10,h.cx,h.cy+d_(h)/4,2.5,.18,0);NPCS[NPCS.length-1].kind='hof'}
 
@@ -506,7 +516,7 @@ function loadTrees(grp,inner,belt,olds){
    parts.forEach(pt=>{const im=new T.InstancedMesh(pt.ge,pt.ma,mine.length);mine.forEach((o,i)=>{Q.setFromAxisAngle(Y,(o.t.x*7.7+o.t.y*3.1)%6.28);M.compose(Vv.set(o.t.x,0,-o.t.y),Q,S.set(o.H,o.H,o.H));im.setMatrixAt(i,M)});im.castShadow=true;im.receiveShadow=false;im.frustumCulled=false;grp.add(im)})});
   olds.forEach(o=>o.visible=false)}).catch(e=>console.warn('trees',e))}
 let BSG,BSM;
-const MODELS=[['Skeleton Magician','char1'],['Gilded Magician','char2'],['Green Shaman','char3'],['Violet Plague Wizard','char4'],['Cyber Wizard','char5'],['Feathered Warden','char6'],['Crystal Archmage','char7'],['Solar Warrior','char8'],['Emerald Sorcerer','char9'],['Chest Golem','char10'],['Crystal Dragon Knight','char11'],['Phantom Maestro','char12'],['Scarecrow Illusionist','char13'],['Crimson Witch','char14'],['Frost Necromancer','char15'],['Pharaoh Relic Mage','char16'],['Mushroom Druid','char17'],['Clockwork Alchemist','char18']];
+const MODELS=[['Skeleton Magician','char1'],['Gilded Magician','char2'],['Green Shaman','char3'],['Violet Plague Wizard','char4'],['Cyber Wizard','char5'],['Feathered Warden','char6'],['Crystal Archmage','char7'],['Solar Warrior','char8'],['Emerald Sorcerer','char9'],['Chest Golem','char10'],['Crystal Dragon Knight','char11'],['Phantom Maestro','char12'],['Scarecrow Illusionist','char13'],['Crimson Witch','char14'],['Frost Necromancer','char15'],['Pharaoh Relic Mage','char16'],['Mushroom Druid','char17'],['Clockwork Alchemist','char18'],['Ronin Kage','char19'],['Captain Brassbeard','char20'],['Stella Veil','char21'],['Obsidian Gorrim','char22'],['Kitsune Volt','char23']];
 const _mp={};
 function gz(u){return fetch(u).then(r=>new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer())}
 function getModel(i){return _mp[i]||(_mp[i]=gz(MODELS[i][1]+'.wasm').then(b=>new Promise((res,rej)=>new T.GLTFLoader().parse(b,'',g=>{const bb=new T.Box3().setFromObject(g.scene),h=bb.max.y-bb.min.y;g.k=1.95/h;g.y=-bb.min.y*g.k;res(g)},rej))))}
@@ -516,7 +526,7 @@ function rigOf(t,cl){const m=T.SkeletonUtils.clone(t.scene);m.scale.setScalar(t.
  if(t.fy===undefined){t.scene.updateMatrixWorld(true);const hl=t.scene.getObjectByName('L_Hand'),hr=t.scene.getObjectByName('R_Hand');t.fy=0;if(hl&&hr){const a=new T.Vector3(),b=new T.Vector3();hl.getWorldPosition(a);hr.getWorldPosition(b);const lx=a.x-b.x,lz=a.z-b.z;if(Math.hypot(lx,lz)>1e-4)t.fy=Math.atan2(-lz,lx)}}
  m.rotation.y=-t.fy;
  const mx=new T.AnimationMixer(m),aW=mx.clipAction(cl.walk),aI=mx.clipAction(cl.idle);aI.play();aW.play();aW.setEffectiveWeight(0);ensureBS();const bs=new T.Mesh(BSG,BSM);bs.rotation.x=-Math.PI/2;bs.position.y=.04;bs.renderOrder=2;return{m,mx,aW,aI,bs}}
-const ONE={'Lady Hex':3,'Sir Glyph':4,'The Warden':5,'Queen Sigil':6,'Archmage Zero':1,'Rook':0,'Tamsin':2,'Solara':7,'Verdant Volt':8,'Brass Mimic':9,'Prism Knight':10,'Wraith Maestro':11,'Scarecrow Vale':12,'Ember Hex':13,'Rime Warden':14,'Khepri':15,'Moss Sage':16,'Cogsworth':17};
+const ONE={'Lady Hex':3,'Sir Glyph':4,'The Warden':5,'Queen Sigil':6,'Archmage Zero':1,'Rook':0,'Tamsin':2,'Solara':7,'Verdant Volt':8,'Brass Mimic':9,'Prism Knight':10,'Wraith Maestro':11,'Scarecrow Vale':12,'Ember Hex':13,'Rime Warden':14,'Khepri':15,'Moss Sage':16,'Cogsworth':17,'Ronin Kage':18,'Captain Brassbeard':19,'Stella Veil':20,'Obsidian Gorrim':21,'Kitsune Volt':22};
 function loadChars(){
  NPCS.forEach((n,i)=>{const mi=ONE[n.name]!==undefined?ONE[n.name]:(n.k*3+i)%13;
   Promise.all([getModel(mi),getClips()]).then(([t,cl])=>{const r=rigOf(t,cl),old=n.g;while(old.children.length)old.remove(old.children[0]);old.add(r.m,r.bs);old.userData={aL:new T.Object3D(),aR:new T.Object3D()};
@@ -542,8 +552,8 @@ function tpCam(dt){
  const bf=camera.aspect<.8?78:66,tf=bf+(run?9:0)+Math.min(5,sp*.25);AV.fov+=(tf-AV.fov)*Math.min(1,dt*4);if(Math.abs(camera.fov-AV.fov)>.05){camera.fov=AV.fov;camera.updateProjectionMatrix()}}
 function chMenu(open){const m=document.getElementById('chSel');if(!m)return;m.style.display=open?'flex':'none';if(open){if(document.pointerLockElement)document.exitPointerLock();[...m.querySelectorAll('[data-i]')].forEach(b=>b.style.borderColor=(+b.dataset.i===AVI)?'#3dff4a':'rgba(255,255,255,.16)')}}
 function buildChMenu(){const m=document.createElement('div');m.id='chSel';m.style.cssText='position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;background:rgba(3,6,5,.78);backdrop-filter:blur(6px)';
- m.innerHTML='<div style="width:min(760px,94vw);max-height:88vh;overflow:auto;background:rgba(8,14,11,.96);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font:700 18px Georgia,serif;color:#fff">Choose your champion</div><div id="chView" style="cursor:pointer;font:700 11px system-ui;letter-spacing:.12em;color:#3dff4a;border:1px solid #3dff4a;border-radius:99px;padding:8px 14px"></div></div><div style="font:600 10px system-ui;letter-spacing:.12em;color:#8fb09a;margin-bottom:12px">ALL 1/1 CHARACTERS · C MENU · V CHANGE VIEW</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">'+MODELS.map((o,i)=>'<div data-i="'+i+'" style="cursor:pointer;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px;background:rgba(255,255,255,.04);color:#fff;font:700 13px system-ui"><div style="font:600 9px system-ui;letter-spacing:.14em;color:#3dff4a;margin-bottom:6px">1/1 · #'+String(i+1).padStart(2,'0')+'</div>'+o[0]+'</div>').join('')+'</div><div id="chX" style="cursor:pointer;margin-top:14px;text-align:center;font:700 11px system-ui;letter-spacing:.14em;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px">CLOSE</div></div>';
- document.body.appendChild(m);m.addEventListener('click',e=>{const d=e.target.closest('[data-i]');if(d){setAvatar(+d.dataset.i);chMenu(true)}else if(e.target.id==='chX'||e.target===m)chMenu(false);else if(e.target.id==='chView')setTP(!TP)});
+ m.innerHTML='<div style="width:min(760px,94vw);max-height:88vh;overflow:auto;background:rgba(8,14,11,.96);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font:700 18px Georgia,serif;color:#fff">Choose your champion</div><div id="chView" style="cursor:pointer;font:700 11px system-ui;letter-spacing:.12em;color:#3dff4a;border:1px solid #3dff4a;border-radius:99px;padding:8px 14px"></div></div><div style="font:600 10px system-ui;letter-spacing:.12em;color:#8fb09a;margin-bottom:12px">ALL 1/1 CHARACTERS · C MENU · V CHANGE VIEW</div><input id="chQ" autocomplete="off" placeholder="Search by name or number (e.g. 14 or witch) — Enter to pick" style="width:100%;box-sizing:border-box;margin-bottom:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font:600 13px system-ui;outline:none"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px">'+MODELS.map((o,i)=>'<div data-i="'+i+'" style="cursor:pointer;border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:12px;background:rgba(255,255,255,.04);color:#fff;font:700 13px system-ui"><div style="font:600 9px system-ui;letter-spacing:.14em;color:#3dff4a;margin-bottom:6px">1/1 · #'+String(i+1).padStart(2,'0')+'</div>'+o[0]+'</div>').join('')+'</div><div id="chX" style="cursor:pointer;margin-top:14px;text-align:center;font:700 11px system-ui;letter-spacing:.14em;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px">CLOSE</div></div>';
+ document.body.appendChild(m);{const q=m.querySelector('#chQ'),fl=()=>{const v=q.value.trim().toLowerCase().replace(/^#/,'');[...m.querySelectorAll('[data-i]')].forEach(b=>{const i=+b.dataset.i,nm=MODELS[i][0].toLowerCase(),num=String(i+1),ok=!v||nm.includes(v)||num===v||num.padStart(2,'0')===v||num.startsWith(v)&&/^\d+$/.test(v);b.style.display=ok?'':'none'})};q.addEventListener('input',fl);q.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){const f=[...m.querySelectorAll('[data-i]')].find(b=>b.style.display!=='none');if(f){setAvatar(+f.dataset.i);chMenu(true);q.value='';fl()}}else if(e.key==='Escape')chMenu(false)});q.addEventListener('keyup',e=>e.stopPropagation())}m.addEventListener('click',e=>{const d=e.target.closest('[data-i]');if(d){setAvatar(+d.dataset.i);chMenu(true)}else if(e.target.id==='chX'||e.target===m)chMenu(false);else if(e.target.id==='chView')setTP(!TP)});
  setTP(TP);const bb=document.getElementById('bChar');if(bb)bb.onclick=()=>chMenu(true);{const bd=document.getElementById('bDeck');if(bd)bd.onclick=()=>deckMenu(true)}setAvatar(AVI)}
 function npcLine(n){const id=pick(cardsOf(n.k)),r=DATA.cards[id];const o=['Have you seen <b>'+r[0]+'</b>? '+(r[5]||'A favourite of mine')+'.','<b>'+r[0]+'</b> carries '+(r[4]!=null?r[4]+' power':'no power at all')+' — do not let the frame fool you.','They say <b>'+r[0]+'</b> watches the room when the lights go out. Press G and see.','Chapter '+n.k+', '+DATA.series[n.k-1].th+'. <b>'+r[0]+'</b> is the one collectors ask about.'];return pick(o)}
 
@@ -1172,7 +1182,7 @@ function assignLights(reg,lit,gk){
     if(!TOUCH){hintShow('Click the scene to look around · WASD to walk to the golden doors',5000)}else hintShow('Left thumb walks · right thumb looks · tap a card to inspect',5000);
   };
   if(/[?&]auto/.test(location.search))en.click();
-  window.__mm={NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
+  window.__mm={get bloom(){return bloom},NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
 })();
 requestAnimationFrame(frame);
 })();
