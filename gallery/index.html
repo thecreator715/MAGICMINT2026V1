@@ -303,9 +303,9 @@ function buildWorld(root){
  const cy_=(...a)=>cy(...a);const cy=(x,y,z0,z1,r0,r1,m,seg)=>{const o=new T.Mesh(new T.CylinderGeometry(r1,r0,z1-z0,seg||20),m);o.position.set(x,(z0+z1)/2,-y);o.castShadow=o.receiveShadow=true;grp.add(o);return o};
  // grass
  const gm=new T.MeshStandardMaterial({name:'M_GRASS'});gm.userData.mA=lc('#1d4a1a');gm.userData.mB=lc('#5c9a34');gm.userData.mG=lc('#0e4a18');gm.userData.mS=1.7;gm.userData.mT=0;gm.roughness=.95;gm.onBeforeCompile=marbleHook;marbleMats.push(gm);
- const gr=new T.Mesh(new T.PlaneGeometry(900,500),gm);gr.rotation.x=-Math.PI/2;gr.position.set(0,.03,48.6+250);gr.receiveShadow=true;grp.add(gr);
+ const gr=new T.Mesh(new T.PlaneGeometry(1500,1000),gm);gr.rotation.x=-Math.PI/2;gr.position.set(0,.03,48.6+500);gr.receiveShadow=true;grp.add(gr);
  // paths
- bx(-6,-150,.03,6,-48.6,.07,pave);bx(-165,-104,.03,165,-96,.07,pave);bx(-165,-148,.03,165,-143,.07,pave);
+ bx(-6,-150,.03,6,-48.6,.07,pave);bx(-6,-268,.03,6,-150,.07,pave);bx(-430,-236,.03,430,-224,.07,pave);bx(-430,-476,.03,430,-464,.07,pave);for(const yy of [-230,-470])for(let x=-420;x<=420;x+=30)for(const o of [-5.2,5.2]){cy(x,yy+o,0,3.2,.09,.07,brass,8);const s=new T.Mesh(new T.SphereGeometry(.28,10,8),warm);s.position.set(x,3.4,-(yy+o));grp.add(s)}bx(-165,-104,.03,165,-96,.07,pave);bx(-165,-148,.03,165,-143,.07,pave);
  for(const x of [-165,165])bx(x-3,-148,.03,x+3,-96,.07,pave);
  for(let x=-160;x<=160;x+=20)for(const y of [-105.2,-94.8]){cy(x,y,0,3.2,.09,.07,brass,8);const s=new T.Mesh(new T.SphereGeometry(.28,10,8),warm);s.position.set(x,3.4,-y);grp.add(s)}
  // pond
@@ -328,6 +328,14 @@ function buildWorld(root){
  for(let t=0;t<900&&BL.length<12;t++){const w=30+Math.floor(R()*17),d=24+Math.floor(R()*11),cx=-150+R()*300,cy=-145+R()*88,x0=cx-w/2,x1=cx+w/2,y0=cy-d/2,y1=cy+d/2;
   if(bad(x0,y0,x1,y1)||BL.some(b=>Math.abs(b.cx-cx)<(b.w+w)/2+14&&Math.abs(b.cy-cy)<(b.d+d)/2+14))continue;
   const k=1+Math.floor(R()*12);BL.push({cx,cy,w,d,n:3+Math.floor(R()*3),k,nm:DATA.series[k-1].th.split(' ').slice(-1)[0].toUpperCase()+' '+NM[Math.floor(R()*NM.length)].toUpperCase(),top:Math.floor(R()*3),seed:Math.floor(R()*1e6)})}}
+ {let q2=424242;const R2=()=>{q2=(q2*16807)%2147483647;return q2/2147483647};
+ [[0,-300,92,66,5,'GRAND MUSEUM OF CARDS'],[-190,-380,80,60,4,'HALL OF LEGENDS'],[190,-380,80,60,4,'CRYSTAL MUSEUM']].forEach(f=>BL.push({cx:f[0],cy:f[1],w:f[2],d:f[3],n:f[4],k:1+Math.floor(R2()*12),nm:f[5],top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true}));
+ const NMB=['Museum','Gallery','Pantheon','Exhibition','Collection','Sanctum','Cathedral','Atelier'];
+ for(let t=0;t<4000&&BL.length<28;t++){const w=56+Math.floor(R2()*30),d=44+Math.floor(R2()*22),cx=-410+R2()*820,cy=-185-R2()*335;
+  if(Math.abs(cx)<w/2+18||Math.abs(cy+230)<d/2+16||Math.abs(cy+470)<d/2+16||cy-d/2<-545||cy+d/2>-182)continue;
+  if(BL.some(b=>Math.abs(b.cx-cx)<(b.w+w)/2+44&&Math.abs(b.cy-cy)<(b.d+d)/2+44))continue;
+  const k=1+Math.floor(R2()*12);BL.push({cx,cy,w,d,n:3+Math.floor(R2()*2),k,nm:DATA.series[k-1].th.split(' ').slice(-1)[0].toUpperCase()+' '+NMB[Math.floor(R2()*NMB.length)].toUpperCase(),top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true})}
+ window.__BL=BL}
  const NBR=BL.map(b=>[b.cx-b.w/2,b.cy-b.d/2,b.cx+b.w/2,b.cy+b.d/2]);const inNB=(x,y)=>NBR.some(r=>x>r[0]-6&&x<r[2]+6&&y>r[1]-6&&y<r[3]+6);
  const tr=new T.CylinderGeometry(.22,.36,5,7),lf=new T.IcosahedronGeometry(2.7,1),NT=150;
  const tm=new T.InstancedMesh(tr,new T.MeshStandardMaterial({color:0x2a1d14,roughness:.9}),NT),lm=new T.InstancedMesh(lf,new T.MeshStandardMaterial({color:lc('#2c6b2a'),roughness:.9,emissive:lc('#0a3a12'),emissiveIntensity:.25}),NT*2);
@@ -340,7 +348,7 @@ function buildWorld(root){
  // ===== open-world horizon: forest belt + rolling hills, no distant buildings
  {const FN=1400,fT=new T.InstancedMesh(new T.CylinderGeometry(.25,.4,5,6),new T.MeshStandardMaterial({color:0x2a1d14,roughness:.9}),FN),fL=new T.InstancedMesh(new T.IcosahedronGeometry(2.9,1),new T.MeshStandardMaterial({color:lc('#2a6a2c'),roughness:.9,emissive:lc('#0a3a12'),emissiveIntensity:.22}),FN*2);
   const FM=new T.Matrix4(),FQ=new T.Quaternion(),FS=new T.Vector3(),FV=new T.Vector3();let fn=0,fs=11;const fr=()=>{fs=(fs*16807)%2147483647;return fs/2147483647};
-  while(fn<FN){const x=-440+fr()*880,y=-50-fr()*480;const inPlay=Math.abs(x)<178&&y>-152&&y<-46;const nearPath=Math.abs(x)<9&&y>-150;if(inPlay||nearPath)continue;
+  while(fn<FN){const x=-720+fr()*1440,y=-50-fr()*900;const inPlay=Math.abs(x)<470&&y>-580&&y<-46;const nearPath=Math.abs(x)<9&&y>-150;if(inPlay||nearPath)continue;
    const edge=Math.max(Math.abs(x)-170,(-y-150)*.8,0);if(edge<4&&fr()<.5)continue;
    if(fn%4===0)TBE.push({x,y,sc:Math.min(1.6,(fr()*.8+.6))});const sc=1+fr()*1.3+edge*.004;FM.compose(FV.set(x,2.5*sc,-y),FQ,FS.set(sc,sc,sc));fT.setMatrixAt(fn,FM);
    FM.compose(FV.set(x,6.4*sc,-y),FQ,FS.set(sc,sc*.95,sc));fL.setMatrixAt(fn*2,FM);FM.compose(FV.set(x+(fr()-.5)*2*sc,8.6*sc,-y+(fr()-.5)*2*sc),FQ,FS.set(sc*.7,sc*.7,sc*.7));fL.setMatrixAt(fn*2+1,FM);fn++}
@@ -399,7 +407,7 @@ function buildWorld(root){
  const orb=(cx,cyy,z)=>{cy(cx,cyy,z,z+3,.9,.7,colm,12);const o=new T.Mesh(new T.IcosahedronGeometry(1.5,1),glowG);o.position.set(cx,z+4.6,-cyy);grp.add(o);spinners.push({o,ax:new T.Vector3(.3,1,0),sp:.5})};
 
  // ===== MEGA BUILDINGS: marble, multi-level, multi-room, interior stairs
- const megaB=b=>{const th=5.2,N=b.n,{cx,cy,w,d}=b,x0=cx-w/2,x1=cx+w/2,y0=cy-d/2,y1=cy+d/2,H=N*th;let q=b.seed;const R=()=>{q=(q*16807)%2147483647;return q/2147483647};
+ const megaB=b=>{const th=b.big?7.4:5.2,ps=b.big?2:1,N=b.n,{cx,cy,w,d}=b,x0=cx-w/2,x1=cx+w/2,y0=cy-d/2,y1=cy+d/2,H=N*th;let q=b.seed;const R=()=>{q=(q*16807)%2147483647;return q/2147483647};
   const ac=DATA.series[b.k-1].ac,gl=new T.MeshBasicMaterial({color:lc(ac)});const hf=.3;
   // ground slab + exterior shell with doors (center of both long faces)
   bx(x0,y0,0,x1,y1,.12,pave);
@@ -430,7 +438,8 @@ function buildWorld(root){
    rc.forEach(([rx,ry],ri)=>{
     const pn=bx(rx-1.6,ry-1.6,(i+1)*th-hf-.08,rx+1.6,ry+1.6,(i+1)*th-hf,gl);
     if((ri+i)%2===0){cy_(rx,ry,i*th+.02,i*th+1.05,.8,.7,colm,12);const o=new T.Mesh(new T.OctahedronGeometry(.45),gl);o.position.set(rx,i*th+1.9,-ry);grp.add(o);spinners.push({o,ax:new T.Vector3(.2,1,0),sp:.9})}
-    poster(cx+(rx>cx?.3:-.3),ry,i*th+2.6,rx>cx?Math.PI/2:-Math.PI/2,2.0,2.6)});
+    poster(cx+(rx>cx?.3:-.3),ry,i*th+(b.big?3.6:2.6),rx>cx?Math.PI/2:-Math.PI/2,2.0*ps,2.6*ps)});
+   if(b.big)for(const px of [cx-w*.36,cx+w*.36]){poster(px,y0+.75,i*th+3.6,Math.PI,2.0*ps,2.6*ps);poster(px,y1-.75,i*th+3.6,0,2.0*ps,2.6*ps)}
    lamps.push({p:B2(cx,cy,i*th+3.4),reg:'EXT',col:new T.Color(ac),i:1.0})}
   // roof parapet + ornament
   bx(x0,y0,H,x1,y0+.5,H+1.1,ext,true);bx(x0,y1-.5,H,x1,y1,H+1.1,ext,true);bx(x0,y0,H,x0+.5,y1,H+1.1,ext,true);bx(x1-.5,y0,H,x1,y1,H+1.1,ext,true);
@@ -443,19 +452,19 @@ function buildWorld(root){
   const nm=['Archivist Pell','Curator Sable','Warden Isra','Scribe Orrin','Vault-Keeper Dune','Lady Corvane','Guide Merrow'];
   for(let j=0;j<2;j++){const lv=j%N,rcx=cx+(j?w/4:-w/4),rcy=cy+(j?-d/4:d/4);addNPC(nm[Math.floor(R()*nm.length)],'Resident · '+b.nm.toLowerCase(),b.k,rcx,rcy,2.8,.2*(j?-1:1),0);NPCS[NPCS.length-1].dz=lv*th+.02+(lv?0:0)}
   lamps.push({p:B2(cx,y0-3,5),reg:'EXT',col:new T.Color(ac),i:1.3},{p:B2(cx,y1+3,5),reg:'EXT',col:new T.Color(ac),i:1.3})};
- BL.forEach(b=>{if(b.hof){const e=earned().filter(i=>DATA.pk[i]),lg=cardsOf(10).filter(i=>DATA.pk[i]);let z=0;PICK=()=>{const L=e.length&&z%2===0?e:lg;return L[(z++*7+3)%L.length]||CIDS[0]}}megaB(b);PICK=null;
+ BL.forEach(b=>{const i0=grp.children.length;if(b.hof){const e=earned().filter(i=>DATA.pk[i]),lg=cardsOf(10).filter(i=>DATA.pk[i]);let z=0;PICK=()=>{const L=e.length&&z%2===0?e:lg;return L[(z++*7+3)%L.length]||CIDS[0]}}megaB(b);PICK=null;
   if(b.castle){const x0=b.cx-b.w/2,x1=b.cx+b.w/2,y0=b.cy-b.d/2,y1=b.cy+b.d/2,Hh=b.n*5.2;
    const cg=new T.MeshBasicMaterial({color:0x3dffb0});
    for(const [tx,ty,hh] of [[x0,y0,Hh+14],[x1,y0,Hh+10],[x0,y1,Hh+10],[x1,y1,Hh+16]]){cy(tx,ty,0,hh,4.2,3.4,ext,20);cy(tx,ty,hh,hh+.5,4.7,4.7,colm,20);cy(tx,ty,hh+.5,hh+7,3.6,0,colm,20);cy(tx,ty,hh-3,hh-2.7,4.3,4.3,cg,20);walls.push([tx-3.8,ty-3.8,tx+3.8,ty+3.8,0,hh]);
     const o=new T.Mesh(new T.OctahedronGeometry(1),glowG);o.position.set(tx,hh+8.8,-ty);grp.add(o);spinners.push({o,ax:new T.Vector3(0,1,0),sp:1.1})}
-   for(let i=0;i<7;i++){const a=i*.9,rr=8+i*2.2,m=new T.Mesh(new T.OctahedronGeometry(1.2+i*.15),i%2?glowG:cg);m.position.set(b.cx+Math.cos(a)*rr,Hh+6+i*2.2,-(b.cy+Math.sin(a)*rr*.7));grp.add(m);spinners.push({o:m,ax:new T.Vector3(.3+i*.1,1,.2),sp:.4+i*.12})}}});
+   for(let i=0;i<7;i++){const a=i*.9,rr=8+i*2.2,m=new T.Mesh(new T.OctahedronGeometry(1.2+i*.15),i%2?glowG:cg);m.position.set(b.cx+Math.cos(a)*rr,Hh+6+i*2.2,-(b.cy+Math.sin(a)*rr*.7));grp.add(m);spinners.push({o:m,ax:new T.Vector3(.3+i*.1,1,.2),sp:.4+i*.12})}}b.items=grp.children.slice(i0)});window.__BLR=BL.map(b=>[b.cx-b.w/2-3,b.cy-b.d/2-3,b.cx+b.w/2+3,b.cy+b.d/2+3]);
 
  // ===== glowing street lines (animated, colour-cycling)
  {const fm=new T.ShaderMaterial({uniforms:{time:{value:0},len:{value:1},ax:{value:0},dash:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
   fragmentShader:'varying vec2 vUv;uniform float time,len,ax,dash;void main(){float u=(ax>.5?vUv.y:vUv.x)*len;float v=ax>.5?vUv.x:vUv.y;float e=abs(v-.5)*2.;float core=smoothstep(1.,.15,e);float pulse=dash>.5?smoothstep(.15,.95,sin(u*.7-time*3.2)*.5+.5):.75+.25*sin(u*.5-time*2.);vec3 col=.55+.45*cos(6.2832*(time*.035+u*.012+vec3(0.,.33,.67)));col=mix(col,vec3(.25,1.,.65),.25);gl_FragColor=vec4(col*core*(.5+1.1*pulse),1.);\n#include <encodings_fragment>\n}'});
   const mk=(cx,cyy,lx,ly,w,dash)=>{const m=fm.clone();m.uniforms.len={value:Math.max(lx,ly)};m.uniforms.ax={value:ly>lx?1:0};m.uniforms.dash={value:dash};m.uniforms.time=fm.uniforms.time;FLOW.push(m);const o=new T.Mesh(new T.PlaneGeometry(lx,ly),m);o.rotation.x=-Math.PI/2;o.position.set(cx,.1,-cyy);o.renderOrder=3;grp.add(o)};
   const lines=(x0,y0,x1,y1)=>{if(x1-x0>y1-y0){const cyy=(y0+y1)/2,L=x1-x0;mk((x0+x1)/2,y0+.35,L,.26,.26,0);mk((x0+x1)/2,y1-.35,L,.26,.26,0);mk((x0+x1)/2,cyy,L,.34,.34,1)}else{const cx_=(x0+x1)/2,L=y1-y0;mk(x0+.35,(y0+y1)/2,.26,L,.26,0);mk(x1-.35,(y0+y1)/2,.26,L,.26,0);mk(cx_,(y0+y1)/2,.34,L,.34,1)}};
-  lines(-6,-150,6,-48.6);lines(-165,-104,165,-96);lines(-165,-148,165,-143);for(const x of [-165,165])lines(x-3,-148,x+3,-96)}
+  lines(-6,-150,6,-48.6);lines(-6,-268,6,-150);lines(-430,-236,430,-224);lines(-430,-476,430,-464);lines(-165,-104,165,-96);lines(-165,-148,165,-143);for(const x of [-165,165])lines(x-3,-148,x+3,-96)}
  // ===== TREASURE CHESTS with hidden cards (feed the deck builder)
  {const wood=new T.MeshStandardMaterial({color:0x4a2c14,roughness:.7}),CH=[];let qq=909;const RR=()=>{qq=(qq*16807)%2147483647;return qq/2147483647};
   const spots=[];const ok=(x,y)=>!BL.some(b=>x>b.cx-b.w/2-3&&x<b.cx+b.w/2+3&&y>b.cy-b.d/2-3&&y<b.cy+b.d/2+3)&&Math.abs(x)>9&&Math.abs(y+100)>7&&Math.hypot(x-pc[0],y-pc[1])>17&&!(x>-136&&x<-74&&y>-126&&y<-74)&&!(x>44&&x<158&&y>-138&&y<-114)&&y<-56&&y>-146;
@@ -976,7 +985,7 @@ function fillBolt(o){const arr=o.m.geometry.attributes.position.array,d=_bv.copy
   for(let i=1;i<=o.n;i++){const t=i/o.n,j=(i<o.n?1:0)*(s===0?.55:amp*1.6)*Math.sin(t*3.14),nx=o.a.x+d.x*L*t+_bv2.x*frr(-j,j)+_bv3.x*frr(-j,j),ny=o.a.y+d.y*L*t+_bv2.y*frr(-j,j)+_bv3.y*frr(-j,j),nz=o.a.z+d.z*L*t+_bv2.z*frr(-j,j)+_bv3.z*frr(-j,j);
    arr[k++]=px;arr[k++]=py;arr[k++]=pz;arr[k++]=nx;arr[k++]=ny;arr[k++]=nz;px=nx;py=ny;pz=nz}}
  o.m.geometry.attributes.position.needsUpdate=true}
-function dmgEnemy(e,dmg,kind,p,m){if(e.dead)return;m=m||1;e.hp-=dmg;e.fl=.22;if(kind===1)e.slow=2.6;fxBurst(kind,p,m);const dd=Math.hypot(e.x-P.x,e.y-P.y)||1;e.kx=(e.x-P.x)/dd*(3+5*m);e.ky=(e.y-P.y)/dd*(3+5*m);BT.stop=Math.max(BT.stop,.04+.05*m);
+function dmgEnemy(e,dmg,kind,p,m){if(e.dead)return;if(e.hp-dmg<=0)winCard(e);m=m||1;e.hp-=dmg;e.fl=.22;if(kind===1)e.slow=2.6;fxBurst(kind,p,m);const dd=Math.hypot(e.x-P.x,e.y-P.y)||1;e.kx=(e.x-P.x)/dd*(3+5*m);e.ky=(e.y-P.y)/dd*(3+5*m);BT.stop=Math.max(BT.stop,.04+.05*m);
  if(e.hp<=0){e.dead=true;e.dy=.55;BT.kills++;BT.stop=.2;BT.fovk=-6;if(BT.tg===e)BT.tg=null}else BT.fovk=Math.max(BT.fovk,1.2*m)}
 function fireSpell(sp,pw){pw=pw===undefined?.12:pw;const tip=tipPos(new T.Vector3()),S=SPELLS[sp],M=1+1.4*pw,DM=S.dmg*(1+1.8*pw);let dir=new T.Vector3();
  {const c2=S.c2;for(let i=0;i<5;i++)fxEm(BPA,tip.x,tip.y,tip.z,0,0,0,.18,frr(.8,1.6)*(1+pw),.6,c2[0],c2[1],c2[2],.9,0,0);fxRing(tip,S.c1,1.6+pw*2.4,.3);for(let i=0;i<20*(1+pw);i++){const a=FR_()*6.28,sp2=frr(2,8);fxEm(BPA,tip.x,tip.y,tip.z,Math.cos(a)*sp2,frr(-2,3),Math.sin(a)*sp2,.35,.2,.3,c2[0],c2[1],c2[2],1,3,0)}}
@@ -1016,13 +1025,38 @@ function applyCastPose(B,t){if(!B||t<0)return;
  const lu=B.LUpperarm,lf=B.LForearm;if(lu&&lu.dir){const a=new T.Quaternion().setFromUnitVectors(lu.dir,new T.Vector3(.55,-.3,-.35).normalize()),b=new T.Quaternion().setFromUnitVectors(lf.dir,new T.Vector3(.85,.3,-.1).normalize());putW(B,'LUpperarm',a,w*.7);putW(B,'LForearm',b,w*.7);putW(B,'LHand',b,w*.7)}
  putW(B,'Spine02',Ry(-.3*p*w).multiply(Rz(-.1*w)),w);putW(B,'Waist',Ry(-.15*p*w),w)}
 // enemies
-async function spawnEnemy(wv){const mi=Math.floor(FR_()*MODELS.length);let t,cl;try{[t,cl]=await Promise.all([getModel(mi),getClips()])}catch(e){return}
- let x=0,y=0,ok=false;for(let k=0;k<40&&!ok;k++){const a=FR_()*6.28,d=frr(22,36);x=P.x+Math.cos(a)*d;y=P.y+Math.sin(a)*d;ok=Math.abs(x)<150&&y<-8&&y>-148&&!blocked(x,y,P.z)}
+const ROST=[];function initRost(){if(ROST.length||typeof DATA==='undefined'||!DATA||!DATA.cards)return;let q=777;const R=()=>{q=(q*16807)%2147483647;return q/2147483647};const ids=Object.keys(DATA.cards);for(let c=0;c<MODELS.length;c++)for(let j=0;j<100;j++)ROST.push({id:ROST.length,mi:c,j,hue:(j/100)*6.2832+c*.37,sat:.75+R()*.9,card:ids[Math.floor(R()*ids.length)],hx:-430+R()*860,hy:-62-R()*500,nm:MODELS[c][0]+' #'+String(j+1).padStart(3,'0')})}
+const DEFK='mmg_def';let DEF=new Set((()=>{try{return JSON.parse(localStorage.getItem(DEFK)||'[]')}catch(e){return window.__def||[]}})());
+function tintMat(m,h,sa){const prev=m.onBeforeCompile;m.userData.hu={value:h};m.userData.su={value:sa};m.onBeforeCompile=(sh,rd)=>{if(prev&&prev!==m.onBeforeCompile)try{prev(sh,rd)}catch(e){}sh.uniforms.uHue=m.userData.hu;sh.uniforms.uSat=m.userData.su;sh.fragmentShader='uniform float uHue,uSat;vec3 hueR(vec3 c,float a){const vec3 k=vec3(.57735);float ca=cos(a),sa=sin(a);return c*ca+cross(k,c)*sa+k*dot(k,c)*(1.-ca);}\n'+sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\n diffuseColor.rgb=hueR(diffuseColor.rgb,uHue);float lmx=dot(diffuseColor.rgb,vec3(.3,.59,.11));diffuseColor.rgb=mix(vec3(lmx),diffuseColor.rgb,uSat);')};m.customProgramCacheKey=()=>'tint'+(prev?'p':'');m.needsUpdate=true}
+async function mkFoe(ent,x,y,hp){let t,cl;try{[t,cl]=await Promise.all([getModel(ent.mi),getClips()])}catch(e){return null}
+ const r=rigOf(t,cl),g=new T.Group();g.add(r.m,r.bs);const mats=[];r.m.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();tintMat(o.material,ent.hue,ent.sat);if(o.material.emissive){o.material.emissive.setRGB(.18,0,.1);mats.push(o.material)}}});
+ const bg=new T.Sprite(new T.SpriteMaterial({color:0x080808,transparent:true,opacity:.8,depthTest:false})),fg=new T.Sprite(new T.SpriteMaterial({color:0x3dff4a,transparent:true,depthTest:false}));bg.renderOrder=20;fg.renderOrder=21;bg.scale.set(1.5,.16,1);bg.visible=fg.visible=false;scene.add(g,bg,fg);
+ return {g,r,mats,x,y,z:floorAt(x,y,0),hp,max:hp,d:99,vf:0,sg:FR_()<.5?1:-1,at:frr(1.5,3.5),ch:0,fl:0,slow:0,dead:false,dy:0,bg,fg,mi:ent.mi,ct:-1,kx:0,ky:0,ent,card:ent.card,tx:x,ty:y,wt:0}}
+function freeEnt(near,rmin,rmax){initRost();if(!ROST.length)return null;const live=new Set();BOTS.forEach(b=>live.add(b.ent.id));BT.en.forEach(b=>b.ent&&live.add(b.ent.id));const c=[];for(const e of ROST){if(live.has(e.id)||DEF.has(e.id))continue;const d=Math.hypot(e.hx-P.x,e.hy-P.y);if(d<rmin||d>rmax)continue;if(Math.hypot(e.hx+45,e.hy+72)<18)continue;if((window.__BLR||[]).some(r=>e.hx>r[0]&&e.hx<r[2]&&e.hy>r[1]&&e.hy<r[3]))continue;if(blocked(e.hx,e.hy,0))continue;c.push(e)}return c.length?c[Math.floor(FR_()*c.length)]:null}
+async function spawnEnemy(wv){const ent=freeEnt(0,22,60)||ROST[Math.floor(FR_()*ROST.length)];if(!ent)return;
+ let x=0,y=0,ok=false;for(let k=0;k<40&&!ok;k++){const a=FR_()*6.28,d=frr(22,36);x=P.x+Math.cos(a)*d;y=P.y+Math.sin(a)*d;ok=Math.abs(x)<440&&y<-8&&y>-560&&!blocked(x,y,P.z)&&!(window.__BLR||[]).some(r=>x>r[0]&&x<r[2]&&y>r[1]&&y<r[3])}
  if(!ok){x=P.x+frr(-14,14);y=P.y+frr(-14,14)}
- const r=rigOf(t,cl),g=new T.Group();g.add(r.m,r.bs);const mats=[];r.m.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();if(o.material.emissive){o.material.emissive.setRGB(.18,0,.1);mats.push(o.material)}}});
- const bg=new T.Sprite(new T.SpriteMaterial({color:0x080808,transparent:true,opacity:.8,depthTest:false})),fg=new T.Sprite(new T.SpriteMaterial({color:0x3dff4a,transparent:true,depthTest:false}));bg.renderOrder=20;fg.renderOrder=21;bg.scale.set(1.5,.16,1);scene.add(g,bg,fg);
- const hp=70+wv*12,e={g,r,mats,x,y,z:P.z,hp,max:hp,d:99,vf:0,sg:FR_()<.5?1:-1,at:frr(1.5,3.5),ch:0,fl:0,slow:0,dead:false,dy:0,bg,fg,mi,ct:-1,kx:0,ky:0};BT.en.push(e);
+ const e=await mkFoe(ent,x,y,70+wv*12);if(!e)return;e.z=P.z;BT.en.push(e);
  const p=new T.Vector3(x,P.z+1,-y);for(let i=0;i<36;i++)fxEm(BPA,p.x+frr(-.5,.5),p.y+frr(-.8,1),p.z+frr(-.5,.5),frr(-1,1),frr(1,4),frr(-1,1),frr(.6,1.2),.5,.5,1.1,.2,1.6,.9,1.5,0)}
+const BOTS=window.__bots=[];let _bq=false,_bt=0,_bh=0,_bf=0;
+function dropFoe(e){scene.remove(e.g,e.bg,e.fg)}
+function winCard(e){if(!e.ent)return;DEF.add(e.ent.id);window.__def=[...DEF];try{localStorage.setItem(DEFK,JSON.stringify([...DEF]))}catch(x){}earnAdd(e.card);const row=DATA.cards[e.card];hintShow('★ WON CARD · '+row[0]+' (Chapter '+row[2].slice(1)+') — press B for your deck',4200)}
+function botTick(dt){
+ if(!(_bf++%20)&&window.__BL)for(const b of window.__BL){if(!b.items)continue;const far=Math.hypot(P.x-b.cx,P.y-b.cy)>360;if(far!==b.far){b.far=far;b.items.forEach(o=>o.visible=!far)}}
+ if(curReg!=='EXT'||!AV){BOTS.forEach(b=>b.g.visible=false);return}
+ for(const b of BOTS.slice()){const d=Math.hypot(b.x-P.x,b.y-P.y);if(d>125){dropFoe(b);BOTS.splice(BOTS.indexOf(b),1)}}
+ _bt-=dt;const cap=TOUCH?9:22;
+ if(_bt<=0&&!_bq){_bt=.6;if(BOTS.length+BT.en.length<cap){const ent=freeEnt(0,22,85);if(ent){_bq=true;mkFoe(ent,ent.hx,ent.hy,70).then(e=>{_bq=false;if(e)BOTS.push(e)}).catch(()=>{_bq=false})}}}
+ _bh-=dt;
+ for(const e of BOTS){e.g.visible=true;e.d=Math.hypot(P.x-e.x,P.y-e.y);e.wt-=dt;
+  if(e.wt<=0){e.wt=frr(2,6);if(FR_()<.3){e.tx=e.x;e.ty=e.y}else{e.tx=e.ent.hx+frr(-11,11);e.ty=e.ent.hy+frr(-11,11)}}
+  const dx=e.tx-e.x,dy=e.ty-e.y,dd=Math.hypot(dx,dy);let mv=0;
+  if(dd>.6){const sp=1.5,nx=e.x+dx/dd*sp*dt,ny=e.y+dy/dd*sp*dt;let m1=false;if(!blocked(nx,e.y,e.z)&&!(window.__BLR||[]).some(r=>nx>r[0]&&nx<r[2]&&e.y>r[1]&&e.y<r[3])){e.x=nx;m1=true}if(!blocked(e.x,ny,e.z)&&!(window.__BLR||[]).some(r=>e.x>r[0]&&e.x<r[2]&&ny>r[1]&&ny<r[3])){e.y=ny;m1=true}mv=m1?1:0;if(!m1)e.wt=0;
+   let da=Math.atan2(dx,-dy)-e.g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));e.g.rotation.y+=da*Math.min(1,dt*5)}
+  e.z+=(floorAt(e.x,e.y,e.z)-e.z)*Math.min(1,dt*8);e.g.position.set(e.x,e.z,-e.y);
+  e.vf+=(mv-e.vf)*Math.min(1,dt*6);e.r.aW.setEffectiveWeight(e.vf);e.r.aI.setEffectiveWeight(1-e.vf);e.r.aW.timeScale=1.1;if(e.d<70||(_bf&1))e.r.mx.update(e.d<70?dt:dt*2);
+  if(e.d<7&&_bh<=0&&!BT.on){_bh=4;hintShow('⚔ '+e.ent.nm+' · beat it to win '+DATA.cards[e.card][0]+' · press F for battle',2600)}}
+}
 function explodeDust(e){const p=btEPos(e,new T.Vector3());
  for(let i=0;i<190;i++){const a=FR_()*6.28,u=frr(-.4,1),sp=frr(2,9);fxEm(BPN,p.x,p.y,p.z,Math.cos(a)*sp*(1-u*.4),u*sp*.9,Math.sin(a)*sp*(1-u*.4),frr(1.6,3.2),frr(.8,1.8),2.4,.6+FR_()*.12,.5+FR_()*.1,.4+FR_()*.1,.55,1.7,.4)}
  for(let i=0;i<50;i++)fxEm(BPN,p.x+frr(-.4,.4),p.y+frr(-.5,.5),p.z+frr(-.4,.4),frr(-1.6,1.6),frr(.4,2.4),frr(-1.6,1.6),frr(2.8,4.6),frr(2.2,4.2),2.2,.1,.1,.12,.6,1.3,.9);
@@ -1052,7 +1086,7 @@ function buildBattleHud(){const d=document.createElement('div');d.id='btH';d.sty
 function bhUpd(){const sp=document.querySelectorAll('#btSp>div');sp.forEach((s,i)=>{s.style.borderColor=i===BT.sp?'#3dff4a':'rgba(255,255,255,.25)';s.querySelector('.cdv').style.height=(BT.cd[i]>0?Math.min(100,BT.cd[i]/SPELLS[i].cd*100):0)+'%'})}
 function toggleBattle(v){const on=v===undefined?!BT.on:v;if(on&&curReg!=='EXT'){hintShow('Step outside to battle',1600);return}
  if(on&&!document.getElementById('btH'))buildBattleHud();BT.on=on;const h=document.getElementById('btH');if(h)h.style.display=on?'block':'none';const b=document.getElementById('bBat');if(b)b.classList.toggle('on',on);
- if(on){BT.hp=BT.max;BT.wave=0;BT.kills=0;BT.nextWave=1.2;setTP(true);if(AV&&!AV.wand)attachWands();selSpell(BT.sp);hintShow('⚔ BATTLE MODE — click/X cast · Z lock-on · 1-3 spells · wheel zoom',3600)}
+ if(on){BOTS.slice().forEach(b=>{if(Math.hypot(b.x-P.x,b.y-P.y)<55){BOTS.splice(BOTS.indexOf(b),1);b.hp=b.max=70;b.amb=false;BT.en.push(b)}});BT.hp=BT.max;BT.wave=0;BT.kills=0;BT.nextWave=1.2;setTP(true);if(AV&&!AV.wand)attachWands();selSpell(BT.sp);hintShow('⚔ BATTLE MODE — click/X cast · Z lock-on · 1-3 spells · wheel zoom',3600)}
  else{BT.en.slice().forEach(e=>{scene.remove(e.g,e.bg,e.fg)});BT.en.length=0;BT.pj.forEach(p=>scene.remove(p.m));BT.pj.length=0;setLock(null);BT.castT=-1}
  if(AV&&AV.wand)AV.wand.visible=on}
 function battleTick(dt,t){if(BT.stop>0){BT.stop-=dt;dt*=.12}if(AV&&BT.fovk){AV.fov+=BT.fovk;BT.fovk=0}
@@ -1435,7 +1469,7 @@ function frame(now){
   }
   if(burst){burst.t+=dt;const a=burst.pts.geometry.attributes.position;for(let i=0;i<burst.vel.length;i++){const v=burst.vel[i];a.array[i*3]+=v[0]*dt*.9;a.array[i*3+1]+=(v[1]-burst.t*.4)*dt*.9;a.array[i*3+2]+=v[2]*dt*.9}a.needsUpdate=true;burst.pts.material.opacity=Math.max(0,1-burst.t/1.4);if(burst.t>1.4){camera.remove(burst.pts);burst.pts.geometry.dispose();burst=null}}
   // render
-  bloom.strength=.28+glow*.4;bloom.threshold=.78-glow*.14;bloom.radius=.45;worldTick(dt,tAcc);battleTick(dt,tAcc);finalP.uniforms.time.value=tAcc%10;moonTick();depthPass();composer.render();
+  bloom.strength=.28+glow*.4;bloom.threshold=.78-glow*.14;bloom.radius=.45;worldTick(dt,tAcc);battleTick(dt,tAcc);botTick(dt);finalP.uniforms.time.value=tAcc%10;moonTick();depthPass();composer.render();
   // perf governor
   frames++;fpsT+=Math.min(1,(now-(frame._r||now))/1000);frame._r=now;
   if(fpsT>1){const f=frames/fpsT;if(DBG)$('#fps').textContent=f.toFixed(0)+' fps · '+curReg;
@@ -1476,7 +1510,7 @@ function assignLights(reg,lit,gk){
     if(!TOUCH){hintShow('Click the scene to look around · WASD to walk to the golden doors',5000)}else hintShow('Left thumb walks · right thumb looks · tap a card to inspect',5000);
   };
   if(/[?&]auto/.test(location.search))en.click();
-  window.__mm={BT,toggleBattle,lockOn,battleCast,selSpell,get bloom(){return bloom},get AV(){return AV},keys,NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
+  window.__mm={dmgEnemy,btEPos,earned,DEF,T,BT,toggleBattle,lockOn,battleCast,selSpell,get bloom(){return bloom},get AV(){return AV},keys,NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
 })();
 requestAnimationFrame(frame);
 })();
