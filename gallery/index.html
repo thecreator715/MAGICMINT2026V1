@@ -303,7 +303,7 @@ function buildWorld(root){
  const cy_=(...a)=>cy(...a);const cy=(x,y,z0,z1,r0,r1,m,seg)=>{const o=new T.Mesh(new T.CylinderGeometry(r1,r0,z1-z0,seg||20),m);o.position.set(x,(z0+z1)/2,-y);o.castShadow=o.receiveShadow=true;grp.add(o);return o};
  // grass
  const gm=new T.MeshStandardMaterial({name:'M_GRASS'});gm.userData.mA=lc('#1d4a1a');gm.userData.mB=lc('#5c9a34');gm.userData.mG=lc('#0e4a18');gm.userData.mS=1.7;gm.userData.mT=0;gm.roughness=.95;gm.onBeforeCompile=marbleHook;marbleMats.push(gm);
- const gr=new T.Mesh(new T.PlaneGeometry(1500,1000),gm);gr.rotation.x=-Math.PI/2;gr.position.set(0,.03,48.6+500);gr.receiveShadow=true;grp.add(gr);
+ const gr=new T.Mesh(new T.PlaneGeometry(1500,1000,300,200),gm);gr.rotation.x=-Math.PI/2;gr.position.set(0,.03,48.6+500);gr.receiveShadow=true;grp.add(gr);
  // paths
  bx(-6,-150,.03,6,-48.6,.07,pave);bx(-6,-268,.03,6,-150,.07,pave);bx(-430,-236,.03,430,-224,.07,pave);bx(-430,-476,.03,430,-464,.07,pave);for(const yy of [-230,-470])for(let x=-420;x<=420;x+=30)for(const o of [-5.2,5.2]){cy(x,yy+o,0,3.2,.09,.07,brass,8);const s=new T.Mesh(new T.SphereGeometry(.28,10,8),warm);s.position.set(x,3.4,-(yy+o));grp.add(s)}bx(-165,-104,.03,165,-96,.07,pave);bx(-165,-148,.03,165,-143,.07,pave);
  for(const x of [-165,165])bx(x-3,-148,.03,x+3,-96,.07,pave);
@@ -329,12 +329,12 @@ function buildWorld(root){
   if(bad(x0,y0,x1,y1)||BL.some(b=>Math.abs(b.cx-cx)<(b.w+w)/2+14&&Math.abs(b.cy-cy)<(b.d+d)/2+14))continue;
   const k=1+Math.floor(R()*12);BL.push({cx,cy,w,d,n:3+Math.floor(R()*3),k,nm:DATA.series[k-1].th.split(' ').slice(-1)[0].toUpperCase()+' '+NM[Math.floor(R()*NM.length)].toUpperCase(),top:Math.floor(R()*3),seed:Math.floor(R()*1e6)})}}
  {let q2=424242;const R2=()=>{q2=(q2*16807)%2147483647;return q2/2147483647};
- [[0,-300,92,66,5,'GRAND MUSEUM OF CARDS'],[-190,-380,80,60,4,'HALL OF LEGENDS'],[190,-380,80,60,4,'CRYSTAL MUSEUM']].forEach(f=>BL.push({cx:f[0],cy:f[1],w:f[2],d:f[3],n:f[4],k:1+Math.floor(R2()*12),nm:f[5],top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true}));
+ [[0,-300,92,66,5,'GRAND MUSEUM OF CARDS'],[-190,-380,80,60,4,'HALL OF LEGENDS'],[190,-380,80,60,4,'CRYSTAL MUSEUM'],[-320,-300,70,70,0,'GREAT PYRAMID',1],[320,-300,70,70,0,'SUN PYRAMID',1]].forEach(f=>BL.push({cx:f[0],cy:f[1],w:f[2],d:f[3],n:f[4],k:1+Math.floor(R2()*12),nm:f[5],top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true,pyr:!!f[6]}));
  const NMB=['Museum','Gallery','Pantheon','Exhibition','Collection','Sanctum','Cathedral','Atelier'];
- for(let t=0;t<4000&&BL.length<28;t++){const w=56+Math.floor(R2()*30),d=44+Math.floor(R2()*22),cx=-410+R2()*820,cy=-185-R2()*335;
+ for(let t=0;t<9000&&BL.length<46;t++){const py=R2()<.3,w=py?60+Math.floor(R2()*20):56+Math.floor(R2()*30),d=py?w:44+Math.floor(R2()*22),cx=-410+R2()*820,cy=-185-R2()*335;
   if(Math.abs(cx)<w/2+18||Math.abs(cy+230)<d/2+16||Math.abs(cy+470)<d/2+16||cy-d/2<-545||cy+d/2>-182)continue;
   if(BL.some(b=>Math.abs(b.cx-cx)<(b.w+w)/2+44&&Math.abs(b.cy-cy)<(b.d+d)/2+44))continue;
-  const k=1+Math.floor(R2()*12);BL.push({cx,cy,w,d,n:3+Math.floor(R2()*2),k,nm:DATA.series[k-1].th.split(' ').slice(-1)[0].toUpperCase()+' '+NMB[Math.floor(R2()*NMB.length)].toUpperCase(),top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true})}
+  const k=1+Math.floor(R2()*12);BL.push({cx,cy,w,d,n:3+Math.floor(R2()*2),k,nm:DATA.series[k-1].th.split(' ').slice(-1)[0].toUpperCase()+' '+(py?'PYRAMID':NMB[Math.floor(R2()*NMB.length)].toUpperCase()),top:Math.floor(R2()*3),seed:Math.floor(R2()*1e6),big:true,pyr:py})}
  window.__BL=BL}
  const NBR=BL.map(b=>[b.cx-b.w/2,b.cy-b.d/2,b.cx+b.w/2,b.cy+b.d/2]);const inNB=(x,y)=>NBR.some(r=>x>r[0]-6&&x<r[2]+6&&y>r[1]-6&&y<r[3]+6);
  const tr=new T.CylinderGeometry(.22,.36,5,7),lf=new T.IcosahedronGeometry(2.7,1),NT=150;
@@ -408,6 +408,22 @@ function buildWorld(root){
 
  // ===== MEGA BUILDINGS: marble, multi-level, multi-room, interior stairs
  const GLASSM=new T.MeshPhysicalMaterial({color:0x8fc4ff,transparent:true,opacity:.2,roughness:.04,metalness:.15,envMapIntensity:1.6,side:T.DoubleSide,depthWrite:false}),BLADEM=new T.MeshStandardMaterial({color:0x0e1218,roughness:.28,metalness:.92,envMapIntensity:1.5}),PANELM=new T.MeshStandardMaterial({color:0xd8dde6,roughness:.5,metalness:.1});
+ const megaP=b=>{const {cx,cy,w,d}=b,x0=cx-w/2,x1=cx+w/2,y0=cy-d/2,y1=cy+d/2,HH=9,ac=DATA.series[b.k-1].ac,gl=new T.MeshBasicMaterial({color:lc(ac)});let q=b.seed;const R=()=>{q=(q*16807)%2147483647;return q/2147483647};
+  bx(x0,y0,0,x1,y1,.12,pave);const dw=3;
+  bx(x0,y0,0,x0+.8,y1,HH,ext,true);bx(x1-.8,y0,0,x1,y1,HH,ext,true);
+  for(const [ya,yb] of [[y0,y0+.8],[y1-.8,y1]]){bx(x0+.8,ya,0,cx-dw,yb,HH,ext,true);bx(cx+dw,ya,0,x1-.8,yb,HH,ext,true);bx(cx-dw,ya,5,cx+dw,yb,HH,ext,true)}
+  bx(x0-.2,y0-.2,HH,x1+.2,y1+.2,HH+.5,BLADEM);
+  const T6=7;for(let t=0;t<T6;t++){const k0=t/T6,k1=(t+1)/T6,i0=(w/2)*(1-k0*.93),z0=HH+.5+t*5.2,z1=z0+5.2;bx(cx-i0,cy-i0,z0,cx+i0,cy+i0,z1,t%2?PANELM:ext);bx(cx-i0-.15,cy-i0-.15,z1-.25,cx+i0+.15,cy+i0+.15,z1,gl)}
+  const topz=HH+.5+T6*5.2,cap=new T.Mesh(new T.OctahedronGeometry(3.2),gl);cap.position.set(cx,topz+5,-cy);grp.add(cap);spinners.push({o:cap,ax:new T.Vector3(0,1,0),sp:.6});
+  const rg=new T.Mesh(new T.TorusGeometry(6,.18,10,64),gl);rg.position.set(cx,topz+5,-cy);rg.rotation.x=Math.PI/2;grp.add(rg);spinners.push({o:rg,ax:new T.Vector3(1,0,0),sp:.3});
+  for(const yy of [y0-.3,y1+.3]){for(const sd of [-1,1])cy_(cx+sd*(dw+1.4),yy,0,7,.7,.5,BLADEM,12);const tr=new T.Mesh(new T.TorusGeometry(dw+1.4,.16,10,48,Math.PI),gl);tr.position.set(cx,6.2,-yy);grp.add(tr)}
+  for(let p=0;p<4;p++){const ang=p*Math.PI/2,px=cx+Math.cos(ang)*w*.22,py=cy+Math.sin(ang)*d*.22;bx(px-.2,py-5,0,px+.2,py+5,6,PANELM,true);poster(px+.34,py,3.4,Math.PI/2,4,5.2);poster(px-.34,py,3.4,-Math.PI/2,4,5.2)}
+  for(const [yy,rot] of [[y0+.9,Math.PI],[y1-.9,0]])for(const px of [cx-w*.3,cx+w*.3])poster(px,yy,3.4,rot,4,5.2);
+  for(const xx of [x0+.9,x1-.9]){poster(xx,cy,3.4,xx<cx?Math.PI/2:-Math.PI/2,4,5.2)}
+  const pc2=new T.Mesh(new T.IcosahedronGeometry(1.4),gl);pc2.position.set(cx,3.2,-cy);grp.add(pc2);spinners.push({o:pc2,ax:new T.Vector3(.3,1,.2),sp:.8});cy_(cx,cy,0,1.4,1.6,1.3,colm,16);
+  lamps.push({p:B2(cx,cy,5),reg:'EXT',col:new T.Color(ac),i:1.2});
+  for(const [yy,ry2] of [[y0-.4,0],[y1+.4,Math.PI]]){const sg=new T.Mesh(new T.PlaneGeometry(12,2),sign(b.nm,'CHAPTER '+b.k+' · '+DATA.series[b.k-1].th.toUpperCase(),ac));sg.position.set(cx,6.4,-yy);sg.rotation.y=ry2;grp.add(sg)}
+  addNPC('Pyramid Keeper','Guardian · '+b.nm.toLowerCase(),b.k,cx+6,cy+6,0,0,0)};
  const megaB=b=>{const th=b.big?7.4:5.2,ps=b.big?2:1,N=b.n,{cx,cy,w,d}=b,x0=cx-w/2,x1=cx+w/2,y0=cy-d/2,y1=cy+d/2,H=N*th;let q=b.seed;const R=()=>{q=(q*16807)%2147483647;return q/2147483647};
   const ac=DATA.series[b.k-1].ac,gl=new T.MeshBasicMaterial({color:lc(ac)});const hf=.3;
   // ground slab + abstract skin: glass curtain, dark-metal mullions, cantilever plates, leaning blades, glowing portals
@@ -451,12 +467,18 @@ function buildWorld(root){
   const nm=['Archivist Pell','Curator Sable','Warden Isra','Scribe Orrin','Vault-Keeper Dune','Lady Corvane','Guide Merrow'];
   for(let j=0;j<2;j++){const lv=j%N,rcx=cx+(j?w/4:-w/4),rcy=cy+(j?-d/4:d/4);addNPC(nm[Math.floor(R()*nm.length)],'Resident · '+b.nm.toLowerCase(),b.k,rcx,rcy,2.8,.2*(j?-1:1),0);NPCS[NPCS.length-1].dz=lv*th+.02+(lv?0:0)}
   lamps.push({p:B2(cx,y0-3,5),reg:'EXT',col:new T.Color(ac),i:1.3},{p:B2(cx,y1+3,5),reg:'EXT',col:new T.Color(ac),i:1.3})};
- BL.forEach(b=>{const i0=grp.children.length;if(b.hof){const e=earned().filter(i=>DATA.pk[i]),lg=cardsOf(10).filter(i=>DATA.pk[i]);let z=0;PICK=()=>{const L=e.length&&z%2===0?e:lg;return L[(z++*7+3)%L.length]||CIDS[0]}}megaB(b);PICK=null;
+ BL.forEach(b=>{const i0=grp.children.length;if(b.hof){const e=earned().filter(i=>DATA.pk[i]),lg=cardsOf(10).filter(i=>DATA.pk[i]);let z=0;PICK=()=>{const L=e.length&&z%2===0?e:lg;return L[(z++*7+3)%L.length]||CIDS[0]}}(b.pyr?megaP:megaB)(b);PICK=null;
   if(b.castle){const x0=b.cx-b.w/2,x1=b.cx+b.w/2,y0=b.cy-b.d/2,y1=b.cy+b.d/2,Hh=b.n*5.2;
    const cg=new T.MeshBasicMaterial({color:0x3dffb0});
    for(const [tx,ty,hh] of [[x0,y0,Hh+14],[x1,y0,Hh+10],[x0,y1,Hh+10],[x1,y1,Hh+16]]){cy(tx,ty,0,hh,4.2,3.4,ext,20);cy(tx,ty,hh,hh+.5,4.7,4.7,colm,20);cy(tx,ty,hh+.5,hh+7,3.6,0,colm,20);cy(tx,ty,hh-3,hh-2.7,4.3,4.3,cg,20);walls.push([tx-3.8,ty-3.8,tx+3.8,ty+3.8,0,hh]);
     const o=new T.Mesh(new T.OctahedronGeometry(1),glowG);o.position.set(tx,hh+8.8,-ty);grp.add(o);spinners.push({o,ax:new T.Vector3(0,1,0),sp:1.1})}
    for(let i=0;i<7;i++){const a=i*.9,rr=8+i*2.2,m=new T.Mesh(new T.OctahedronGeometry(1.2+i*.15),i%2?glowG:cg);m.position.set(b.cx+Math.cos(a)*rr,Hh+6+i*2.2,-(b.cy+Math.sin(a)*rr*.7));grp.add(m);spinners.push({o:m,ax:new T.Vector3(.3+i*.1,1,.2),sp:.4+i*.12})}}b.items=grp.children.slice(i0)});window.__BLR=BL.map(b=>[b.cx-b.w/2-3,b.cy-b.d/2-3,b.cx+b.w/2+3,b.cy+b.d/2+3]);
+ {const ss=(a,b2,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b2-a)));return t*t*(3-2*t)},BR=window.__BLR;
+  window.hillH=(x,y)=>{if(y>-150||y<-585||Math.abs(x)>478)return 0;let m=ss(-150,-200,y)*ss(0,60,Math.min(478-Math.abs(x),y+585));
+   if(y>-275)m*=ss(10,45,Math.abs(x));m*=ss(8,30,Math.abs(y+230))*ss(8,30,Math.abs(y+470));if(m<=0)return 0;
+   for(const r of BR){const dx=Math.max(r[0]-x,0,x-r[2]),dy=Math.max(r[1]-y,0,y-r[3]);m*=ss(6,40,Math.hypot(dx,dy));if(m<=0)return 0}
+   return Math.max(0,m*(6.5*Math.sin(x*.012+1.3)*Math.cos(y*.01)+4.2*Math.sin(x*.026+y*.019)+2.2*Math.sin(x*.055-y*.047)+4.5))};
+  const pa=gr.geometry.attributes.position,Y0=48.6+500;for(let i=0;i<pa.count;i++){const px=pa.getX(i),py=pa.getY(i);pa.setZ(i,window.hillH(px,py-Y0))}pa.needsUpdate=true;gr.geometry.computeVertexNormals();gr.geometry.computeBoundingSphere()}
 
  // ===== glowing street lines (animated, colour-cycling)
  {const fm=new T.ShaderMaterial({uniforms:{time:{value:0},len:{value:1},ax:{value:0},dash:{value:0}},vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
@@ -916,7 +938,7 @@ function floorAt(x,y,feet){
   let best=-1e9;
   for(const f of floors){if(inRect(x,y,f)&&f[4]<=feet+.6&&f[4]>best)best=f[4]}
   for(const r of ramps){if(inRect(x,y,r)){const h=rampH(x,y,r);if(h<=feet+.6&&h>best)best=h}}
-  return best<-1e8?0:best;
+  return best<-1e8?(window.hillH?window.hillH(x,y):0):best;
 }
 function blocked(x,y,feet){
   for(const w of walls){
@@ -1054,6 +1076,7 @@ const BOTS=window.__bots=[];let _bq=false,_bt=0,_bh=0,_bf=0;
 function dropFoe(e){scene.remove(e.g,e.bg,e.fg)}
 function winCard(e){if(!e.ent)return;DEF.add(e.ent.id);window.__def=[...DEF];try{localStorage.setItem(DEFK,JSON.stringify([...DEF]))}catch(x){}earnAdd(e.card);const row=DATA.cards[e.card];hintShow('★ WON CARD · '+row[0]+' (Chapter '+row[2].slice(1)+') — press B for your deck',4200)}
 function botTick(dt){
+ if(!window.__wf&&walls.length>50){window.__wf=1;for(let i=walls.length-1;i>=0;i--){const w=walls[i];if(w[5]>=30&&w[4]===0&&((w[3]-w[1]>100&&w[2]-w[0]<3)||(w[2]-w[0]>300&&w[3]-w[1]<3)))walls.splice(i,1)}walls.push([-482,-590,482,-589,0,40],[-482,-590,-481,-40,0,40],[481,-590,482,-40,0,40])}
  if(!(_bf++%20)&&window.__BL)for(const b of window.__BL){if(!b.items)continue;const far=Math.hypot(P.x-b.cx,P.y-b.cy)>360;if(far!==b.far){b.far=far;b.items.forEach(o=>o.visible=!far)}}
  if(curReg!=='EXT'||!AV){BOTS.forEach(b=>b.g.visible=false);return}
  for(const b of BOTS.slice()){const d=Math.hypot(b.x-P.x,b.y-P.y);if(d>125){dropFoe(b);BOTS.splice(BOTS.indexOf(b),1)}}
@@ -1524,7 +1547,7 @@ function assignLights(reg,lit,gk){
     if(!TOUCH){hintShow('Click the scene to look around · WASD to walk to the golden doors',5000)}else hintShow('Left thumb walks · right thumb looks · tap a card to inspect',5000);
   };
   if(/[?&]auto/.test(location.search))en.click();
-  window.__mm={dmgEnemy,btEPos,earned,DEF,T,BT,toggleBattle,lockOn,battleCast,selSpell,get bloom(){return bloom},get AV(){return AV},keys,NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
+  window.__mm={walls,dmgEnemy,btEPos,earned,DEF,T,BT,toggleBattle,lockOn,battleCast,selSpell,get bloom(){return bloom},get AV(){return AV},keys,NPCS,openDlg,P,tp,tpRoom,castSpell,setFx,toggleGlow,openInspect,paints,paintList,get insp(){return insp},closeInspect,nav:()=>NAV,renderer,camera,scene,start:()=>en.click()};
 })();
 requestAnimationFrame(frame);
 })();
