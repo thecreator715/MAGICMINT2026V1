@@ -632,11 +632,18 @@ let TP=true,AVI=0,AV=null;try{AVI=+localStorage.getItem('mmg_av')||0;TP=localSto
 function setAvatar(i){AVI=i;try{localStorage.setItem('mmg_av',i)}catch(e){}
  Promise.all([getModel(i),getClips()]).then(([t,cl])=>{if(AV){scene.remove(AV.root);}const r=rigOf(t,cl),root=new T.Group();root.add(r.m,r.bs);scene.add(root);AV={root,mx:r.mx,aW:r.aW,aI:r.aI,wt:0,cd:4.6,fov:66,B:r.B,m:r.m,my:r.my,rw:0,ph:0,pv:0};try{attachWands()}catch(e){console.warn('wand',e)}}).catch(e=>console.warn('avatar',e))}
 function setTP(v){TP=v;try{localStorage.setItem('mmg_tp',v?'1':'0')}catch(e){}const b=document.getElementById('chView');if(b)b.textContent='View: '+(TP?'THIRD PERSON':'FIRST PERSON')}
+function doJump(){if(insp||dlgOpen||(document.getElementById('map')&&document.getElementById('map').classList.contains('on')))return;
+ const n=P.jn||0;if(n>=2)return;
+ if(!P.air){P.air=1;P.jv=8.6;P.jh=P.jh||0;P.jn=1;P.dj=0;P.sq=0;fxRing(_bv.set(P.x,P.z+.1,-P.y),[1.2,1.2,1.4],2.2,.3);for(let i=0;i<8;i++){const a=FR_()*6.28;fxEm(BPN,P.x,P.z+.1,-P.y,Math.cos(a)*2.5,.5,Math.sin(a)*2.5,.45,.45,1.1,.6,.6,.6,.3,2,0)}}
+ else{P.jv=8;P.jn=2;P.spin=.01;P.dj=1;fxRing(_bv.set(P.x,P.z+.3,-P.y),[.4,1.4,2.2],3.4,.4);for(let i=0;i<26;i++){const a=FR_()*6.28,r=frr(1,4);fxEm(BPA,P.x,P.z+.4,-P.y,Math.cos(a)*r,frr(-3,-.5),Math.sin(a)*r,.5,.22,.3,.4,1.2,2,.9,2,0)}}}
 function tpCam(dt){
  const on=TP&&AV&&!insp;if(AV)AV.root.visible=on;if(!on)return;
  if(BT.on&&BT.man&&BT.tg&&!BT.tg.dead){const yw=Math.atan2(-(BT.tg.x-P.x),BT.tg.y-P.y);let dd=yw-P.yaw;dd=Math.atan2(Math.sin(dd),Math.cos(dd));P.yaw+=dd*Math.min(1,dt*5)}
  const sp=Math.hypot(P.vx,P.vy),run=(keys.ShiftLeft||keys.ShiftRight)&&sp>6;
- AV.root.position.set(P.x,P.z,-P.y);
+ AV.root.position.set(P.x,P.z,-P.y);AV.root.rotation.order='YXZ';
+ {const th=P.spin||0,h=.9,air=P.air?1:0,st=P.air?Math.max(0,Math.min(.16,P.jv/50)):0,sq=Math.min(.25,P.sq||0)*1.1;
+  if(th>0){const yw=AV.root.rotation.y;AV.root.rotation.x=th;AV.root.position.x+=-h*Math.sin(th)*Math.sin(yw);AV.root.position.z+=-h*Math.sin(th)*Math.cos(yw);AV.root.position.y+=h*(1-Math.cos(th))}else AV.root.rotation.x=air?Math.max(-.12,Math.min(.2,-P.jv*.012)):0;
+  const sy2=1+st-sq,sxz=1/Math.sqrt(sy2);AV.root.scale.set(sxz,sy2,sxz)}
  if(sp>.5){const ty=Math.atan2(P.vx,-P.vy);let da=ty-AV.root.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));AV.root.rotation.y+=da*Math.min(1,dt*10)}
  AV.wt+=(Math.min(1,sp/2)-AV.wt)*Math.min(1,dt*10);AV.aW.setEffectiveWeight(AV.wt);AV.aI.setEffectiveWeight(1-AV.wt);AV.aW.timeScale=Math.max(.6,Math.min(1.9,sp/1.25));AV.mx.update(dt);
  {const tg=run?Math.max(0,Math.min(1,(sp-6)/4.5)):0;AV.rw+=(tg-AV.rw)*Math.min(1,dt*(tg>AV.rw?5:7));
@@ -1244,6 +1251,7 @@ function battleTick(dt,t){if(BT.stop>0){BT.stop-=dt;dt*=.12}
 addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   keys[e.code]=true;
+  if(e.code==='Space'&&!e.repeat&&typeof doJump==='function')doJump();
   if(e.code==='KeyG')toggleGlow();
   if(e.code==='KeyC'){const m=document.getElementById('chSel');chMenu(!m||m.style.display==='none')}
   if(e.code==='KeyV')setTP(!TP);if(e.code==='KeyB'){const m=document.getElementById('deckB');deckMenu(!m||m.style.display==='none')}
@@ -1467,7 +1475,10 @@ function frame(now){
   const nx=P.x+P.vx*dt,ny=P.y+P.vy*dt;
   if(!blocked(nx,P.y,P.z))P.x=nx;else P.vx=0;
   if(!blocked(P.x,ny,P.z))P.y=ny;else P.vy=0;
-  const tz=floorAt(P.x,P.y,P.z);P.z+=(tz-P.z)*(1-Math.exp(-dt*(tz>P.z?14:9)));
+  {const tz=floorAt(P.x,P.y,P.z),jh=P.jh||0;let fz=P.z-jh;fz+=(tz-fz)*(1-Math.exp(-dt*(tz>fz?14:9)));
+   if(P.air){P.jv-=24*dt;P.jh=jh+P.jv*dt;P.spin>0&&(P.spin=Math.min(6.2832,P.spin+dt*11.5));if(P.spin>=6.2832)P.spin=0;
+    if(P.jh<=0){P.jh=0;if(P.jv<-5){P.sq=.22;fxRing(_bv.set(P.x,fz+.1,-P.y),[1.2,1.2,1.4],2.6,.35);for(let i=0;i<10;i++){const a=FR_()*6.28;fxEm(BPN,P.x,fz+.1,-P.y,Math.cos(a)*3,.6,Math.sin(a)*3,.5,.5,1.2,.6,.6,.6,.35,2,0)}}P.air=0;P.jv=0;P.jn=0;P.spin=0}}
+   P.sq=Math.max(0,(P.sq||0)-dt);P.z=fz+(P.jh||0)}
   const bob=Math.sin(tAcc*9)*Math.min(1,Math.hypot(P.vx,P.vy)/4)*.035;
   camera.position.set(P.x,P.z+EYE+bob,-P.y);
   camera.rotation.set(P.pitch,P.yaw,0,'YXZ');
