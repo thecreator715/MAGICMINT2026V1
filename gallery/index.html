@@ -1248,7 +1248,9 @@ function battleTick(dt,t){if(BT.stop>0){BT.stop-=dt;dt*=.12}
  if(inf)inf.textContent='WAVE '+BT.wave+' · KOs '+BT.kills+(BT.tg?' · LOCKED':'');bhUpd();{const pw=document.getElementById('btPw');if(pw){pw.style.opacity=BT.charging?1:0;const f=document.getElementById('btPwF');f.style.width=BT.chg*100+'%';f.style.background=BT.chg<.5?'linear-gradient(90deg,#3dff4a,#ffe04a)':'linear-gradient(90deg,#ffe04a,#ff3d5a)';document.getElementById('btPwv').textContent='x'+(1+1.8*BT.chg).toFixed(1)+(BT.chg>=1?' MAX':'')}}
  if(BT.shake>.001){camera.position.x+=frr(-1,1)*BT.shake*.25;camera.position.y+=frr(-1,1)*BT.shake*.25}}
 
-{const b=document.getElementById('bBat');if(b)b.onclick=e=>{e.stopPropagation();toggleBattle()}}
+{const b=document.getElementById('bBat');if(b)b.onclick=e=>{e.stopPropagation();if(!BT.on&&typeof NPCS!=='undefined'&&!dlgOpen&&!insp){let bn=null,bd=60;for(const n of NPCS){if(n.kind==='trader'||n.kind==='hof')continue;const d=Math.hypot(n.x-P.x,n.y-P.y);if(d<bd){bd=d;bn=n}}
+  if(bn){openDlg(bn);setTimeout(()=>{const bt=[...document.querySelectorAll('#dlg button')].find(x=>/^(Battle|Enter the arena)$/.test(x.textContent.trim()));if(bt)bt.click()},60);return}}
+  toggleBattle()}}
 addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   keys[e.code]=true;
