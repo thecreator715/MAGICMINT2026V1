@@ -728,7 +728,7 @@ function worldTick(dt,t){
   if(n.r&&n.vf>.015){const na=n.a+n.sp*n.vf*dt,nx=n.cx+Math.cos(na)*n.r,ny=n.cy+Math.sin(na)*n.r;if(n.reg==='EXT'&&(blocked(nx,ny,0)||blocked(nx+Math.sign(nx-n.x)*.9,ny+Math.sign(ny-n.y)*.9,0))){n.sp=-n.sp;n.bc=(n.bc||0)+1;if(n.bc>6){n.r=Math.max(2,n.r*.8);n.bc=0}}else{n.a=na;n.bc=0}n.x=n.cx+Math.cos(n.a)*n.r;n.y=n.cy+Math.sin(n.a)*n.r;const s=Math.sign(n.sp);n.hx=-Math.sin(n.a)*s;n.hy=Math.cos(n.a)*s}
   if(go||n.vf>.3){hx=n.hx!==undefined?n.hx:0;hy=n.hy!==undefined?n.hy:1}else{hx=d<12?dx/d:(n.hx||0);hy=d<12?dy/d:(n.hy||1)}
   n.g.userData.aR.rotation.x=close?-.9+Math.sin(t*3)*.2:0;
-  if(n.rig){const sp=Math.abs(n.sp)*n.r*n.vf;n.wt+=(Math.min(1,n.vf*1.4)-n.wt)*Math.min(1,dt*8);n.aW.setEffectiveWeight(n.wt);n.aI.setEffectiveWeight(1-n.wt);n.aW.timeScale=Math.max(.5,Math.min(1.7,sp/1.25));n.mx.update(dt);n.g.position.y=n.dz||0;
+  if(n.rig){const sp=Math.abs(n.sp)*n.r*n.vf;n.wt+=(Math.min(1,n.vf*1.4)-n.wt)*Math.min(1,dt*8);n.aW.setEffectiveWeight(n.wt);n.aI.setEffectiveWeight(1-n.wt);n.aW.timeScale=Math.max(.5,Math.min(1.7,sp/1.25));if(d<45)n.mx.update(dt);else{n._ad=(n._ad||0)+dt;if(n._ad>.066){n.mx.update(n._ad);n._ad=0}}n.g.position.y=n.dz||0;
    if(n.hb){const lk=(d<9||dlgOpen===n)?1:0;n.lk=(n.lk||0)+(lk-(n.lk||0))*Math.min(1,dt*5);
     if(n.lk>.01){n.hb.updateWorldMatrix(true,false);n.hb.getWorldPosition(_hp);_ht.set(P.x,P.z+EYE-n.g.position.y*0,-P.y).sub(_hp);const L=_ht.length();_ht.normalize();
      const ry=n.g.rotation.y;_hf.set(Math.sin(ry),0,Math.cos(ry));
