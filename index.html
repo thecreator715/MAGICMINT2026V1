@@ -2501,20 +2501,21 @@ const GURL=location.hostname.endsWith('github.io')?'gallery/':'https://thecreato
 let gh=null,gf=null,bar=null;
 const BS='cursor:pointer;border:1px solid #3dff4a;background:rgba(5,10,7,.9);color:#fff;border-radius:99px;padding:9px 16px;font:700 11px sans-serif;letter-spacing:.12em';
 function galShow(){if(!gh){gh=document.createElement('div');gh.style.cssText='position:fixed;inset:0;z-index:9998;background:#020604;display:none;flex-direction:column';
- gf=document.createElement('iframe');gf.src=GURL;gf.title='MagicMint Gallery';gf.setAttribute('allow','fullscreen; autoplay; gamepad');gf.style.cssText='width:100%;flex:1;min-height:0;border:0;display:block';
+ gf=document.createElement('iframe');gf.src=GURL;gf.title='MagicMint Gallery';gf.setAttribute('allow','fullscreen; autoplay; gamepad');gf.onload=()=>{if(galRes!==null&&gf.dataset.off!=='1'){const w2=galRes;galRes=null;setTimeout(()=>{try{gf.contentWindow.postMessage({mmg:'result',won:w2},'*')}catch(x){}},3000)}};gf.style.cssText='width:100%;flex:1;min-height:0;border:0;display:block';
  const b=document.createElement('button');b.textContent='← BACK TO SITE';b.style.cssText=BS+';padding:7px 14px;font-size:10px';b.onclick=()=>{st.coll='X:dash';render()};
  const a=document.createElement('a');a.textContent='OPEN IN NEW TAB';a.href=GURL;a.target='_blank';a.rel='noopener';a.style.cssText=BS+';padding:7px 14px;font-size:10px;text-decoration:none';
  const tb=document.createElement('div');tb.style.cssText='display:flex;gap:8px;align-items:center;padding:calc(6px + env(safe-area-inset-top)) 10px 6px;background:#030806;border-bottom:1px solid #ffffff1a;flex:none';tb.append(b,a);gh.append(tb,gf);document.body.appendChild(gh);
  let gon=null;setInterval(()=>{const on=st.coll==='X:gallery';gh.style.display=on?'flex':'none';if(on!==gon){gon=on;try{gf.contentWindow.postMessage({mmg:'pause',on:!on},'*')}catch(e){}}},250)}
  gh.style.display='flex'}
 P.gallery=o=>{o.innerHTML='<div class="note">The gallery opens full screen. Use Back to site to return.<\/div>';galShow()};
-const fin=w=>{document.body.classList.remove('gbat');if(bar){bar.remove();bar=null}st.coll='X:gallery';render();if(gf)gf.contentWindow.postMessage({mmg:'result',won:w},'*')};
-addEventListener('message',e=>{const m=e.data;if(m&&m.mm==='battleEnd'&&bar){fin(!!m.won);return}if(!m||m.mmg!=='battle')return;st.coll='LAB:cardgame';render();labSend({mm:'galleryBattle',npc:m.npc,deck:m.deck,pdeck:m.pdeck});if(bar)bar.remove();
+let galRes=null;const fin=w=>{try{sessionStorage.removeItem('mmg_inb')}catch(x){}document.body.classList.remove('gbat');if(bar){bar.remove();bar=null}galRes=w;st.coll='X:gallery';render();if(gf&&gf.dataset.off==='1'){gf.dataset.off='';gf.onload=()=>{gf.onload=null;const w2=galRes;setTimeout(()=>{try{gf.contentWindow.postMessage({mmg:'result',won:w2},'*')}catch(x){}},3000)};gf.src=GURL}else if(gf)gf.contentWindow.postMessage({mmg:'result',won:w},'*')};
+addEventListener('message',e=>{const m=e.data;if(m&&m.mm==='battleEnd'&&bar){fin(!!m.won);return}if(!m||m.mmg!=='battle')return;try{if(!m.__r)sessionStorage.setItem('mmg_inb',JSON.stringify(Object.assign({__r:1},m)))}catch(x){}if(gf){gf.dataset.off='1';try{gf.src='about:blank'}catch(x){}}st.coll='LAB:cardgame';render();labSend({mm:'galleryBattle',npc:m.npc,deck:m.deck,pdeck:m.pdeck});if(bar)bar.remove();
  bar=document.createElement('div');bar.id='gbar';document.body.classList.add('gbat');
  bar.innerHTML='<span>Gallery battle vs <b>'+E(m.npc)+'<\/b> · Chapter '+E(m.k)+'  deck \u00b7 returns to the gallery when the match ends<\/span>';
  [['FORFEIT AND RETURN',false]].forEach(([t,w])=>{const b=document.createElement('button');b.textContent=t;b.style.cssText=BS;b.onclick=()=>fin(w);bar.append(b)});
  document.body.appendChild(bar)});
 if(/gallery-battle/.test(location.hash))setTimeout(()=>{st.coll='LAB:cardgame';render()},600);
+try{const sb=JSON.parse(sessionStorage.getItem('mmg_inb')||'null');if(sb&&sb.npc)setTimeout(()=>dispatchEvent(new MessageEvent('message',{data:sb})),900)}catch(x){}
 }
 {
 FLAT.push(['dash','Dashboard','Every page in one place','#3dff4a']);
